@@ -40,6 +40,9 @@ export const Sidebar: React.FC = () => {
           </Link>
         ))}
       </nav>
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50">
+        <p className="text-xs text-gray-500 text-center">蜀ICP备2026003667号-1</p>
+      </div>
     </aside>
   );
 };

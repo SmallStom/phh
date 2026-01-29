@@ -2,6 +2,9 @@ FROM node:22-alpine3.21 AS builder
 
 WORKDIR /app
 
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
 COPY package*.json ./
 
 RUN npm ci
@@ -10,7 +13,7 @@ COPY . .
 
 RUN npm run build
 
-FROM nginx:alpine
+FROM nginx:latest
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 

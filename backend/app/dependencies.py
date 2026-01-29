@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from app.core.database import get_db
 from app.core.security import decode_access_token
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.tenant import Tenant
 
 security = HTTPBearer()
@@ -72,3 +72,25 @@ async def get_current_user_optional(
     
     user = db.query(User).filter(User.id == user_id).first()
     return user
+
+
+async def require_super_admin(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    if current_user.role != UserRole.SUPER_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin access required"
+        )
+    return current_user
+
+
+async def require_admin_or_super_admin(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user

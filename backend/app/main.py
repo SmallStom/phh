@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.config import settings
-from app.api import auth, records, experiences, collections, tags, likes, comments
+from app.api import auth, records, experiences, collections, tags, likes, comments, admin
 from fastapi.exceptions import RequestValidationError
 import logging
 
@@ -25,6 +25,7 @@ app.include_router(collections.router)
 app.include_router(tags.router)
 app.include_router(likes.router)
 app.include_router(comments.router)
+app.include_router(admin.router)
 
 
 @app.exception_handler(RequestValidationError)
