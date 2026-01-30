@@ -38,17 +38,22 @@ def create_tables():
         else:
             logger.info("image_urls column already exists")
         
-        # 修复 recordtype enum - 先更新数据为小写，再转换类型
+        # 修复 recordtype enum
         conn.execute(text("""
             DO $$
+            DECLARE
+                v_current_type TEXT;
             BEGIN
-                -- 先更新现有数据为小写
-                UPDATE records SET record_type = LOWER(record_type::text) 
-                WHERE record_type::text != LOWER(record_type::text);
-                
-                -- 如果存在旧 enum，先转换为 text
+                -- 检查 enum 是否存在
                 IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordtype') THEN
+                    -- 先转为 text 类型
                     ALTER TABLE records ALTER COLUMN record_type TYPE TEXT;
+                    
+                    -- 更新数据为小写
+                    UPDATE records SET record_type = LOWER(record_type) 
+                    WHERE record_type IS NOT NULL AND record_type != LOWER(record_type);
+                    
+                    -- 删除旧 enum
                     DROP TYPE IF EXISTS recordtype;
                 END IF;
                 
@@ -60,24 +65,26 @@ def create_tables():
                     USING record_type::recordtype;
             EXCEPTION 
                 WHEN duplicate_object THEN 
-                    -- enum 已存在，检查值是否正确
                     NULL;
             END $$;
         """))
         conn.commit()
         logger.info("Fixed recordtype enum")
         
-        # 修复 recordstatus enum - 先更新数据为小写，再转换类型
+        # 修复 recordstatus enum
         conn.execute(text("""
             DO $$
             BEGIN
-                -- 先更新现有数据为小写
-                UPDATE records SET status = LOWER(status::text) 
-                WHERE status::text != LOWER(status::text);
-                
-                -- 如果存在旧 enum，先转换为 text
+                -- 检查 enum 是否存在
                 IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordstatus') THEN
+                    -- 先转为 text 类型
                     ALTER TABLE records ALTER COLUMN status TYPE TEXT;
+                    
+                    -- 更新数据为小写
+                    UPDATE records SET status = LOWER(status) 
+                    WHERE status IS NOT NULL AND status != LOWER(status);
+                    
+                    -- 删除旧 enum
                     DROP TYPE IF EXISTS recordstatus;
                 END IF;
                 
@@ -89,7 +96,6 @@ def create_tables():
                     USING status::recordstatus;
             EXCEPTION 
                 WHEN duplicate_object THEN 
-                    -- enum 已存在，检查值是否正确
                     NULL;
             END $$;
         """))
