@@ -53,16 +53,16 @@ def create_super_admin():
                 logger.info(f"Super admin already exists: {settings.SUPER_ADMIN_EMAIL}")
             else:
                 user_id = uuid.uuid4()
+                # 使用原始 SQL 确保 role 值正确
                 conn.execute(text("""
                     INSERT INTO users (id, tenant_id, username, email, password_hash, role, created_at)
-                    VALUES (:id, :tenant_id, :username, :email, :password_hash, CAST(:role AS userrole), NOW())
+                    VALUES (:id, :tenant_id, :username, :email, :password_hash, 'super_admin'::userrole, NOW())
                 """), {
                     "id": user_id,
                     "tenant_id": tenant_id,
                     "username": settings.SUPER_ADMIN_USERNAME,
                     "email": settings.SUPER_ADMIN_EMAIL,
-                    "password_hash": password_hash,
-                    "role": "super_admin"
+                    "password_hash": password_hash
                 })
                 logger.info(f"Created super admin: {settings.SUPER_ADMIN_EMAIL}")
                 logger.info(f"Username: {settings.SUPER_ADMIN_USERNAME}")

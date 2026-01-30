@@ -21,47 +21,61 @@ def create_tables():
 
 
 def create_super_admin(db: Session):
-    existing_admin = db.query(User).filter(
-        User.email == settings.SUPER_ADMIN_EMAIL
-    ).first()
+    from sqlalchemy import text
+    import uuid
     
-    if existing_admin:
+    # 使用原生 SQL 查询，避免 enum 转换问题
+    result = db.execute(text("SELECT id FROM users WHERE email = :email"), {
+        "email": settings.SUPER_ADMIN_EMAIL
+    })
+    
+    if result.fetchone():
         logger.info(f"Super admin already exists: {settings.SUPER_ADMIN_EMAIL}")
-        return existing_admin
+        return
     
-    tenant = db.query(Tenant).filter(
-        Tenant.slug == settings.SUPER_ADMIN_TENANT_SLUG
-    ).first()
+    # 查询或创建租户
+    result = db.execute(text("SELECT id FROM tenants WHERE slug = :slug"), {
+        "slug": settings.SUPER_ADMIN_TENANT_SLUG
+    })
+    tenant_row = result.fetchone()
     
-    if not tenant:
-        tenant = Tenant(
-            name="System",
-            slug=settings.SUPER_ADMIN_TENANT_SLUG,
-            description="System tenant for super admin"
-        )
-        db.add(tenant)
-        db.commit()
-        db.refresh(tenant)
+    if tenant_row:
+        tenant_id = tenant_row[0]
+        logger.info(f"Using existing tenant: {settings.SUPER_ADMIN_TENANT_SLUG}")
+    else:
+        tenant_id = uuid.uuid4()
+        db.execute(text("""
+            INSERT INTO tenants (id, name, slug, description, created_at)
+            VALUES (:id, :name, :slug, :description, NOW())
+        """), {
+            "id": str(tenant_id),
+            "name": "System",
+            "slug": settings.SUPER_ADMIN_TENANT_SLUG,
+            "description": "System tenant for super admin"
+        })
         logger.info(f"Created system tenant: {settings.SUPER_ADMIN_TENANT_SLUG}")
     
-    super_admin = User(
-        tenant_id=tenant.id,
-        username=settings.SUPER_ADMIN_USERNAME,
-        email=settings.SUPER_ADMIN_EMAIL,
-        password_hash=get_password_hash(settings.SUPER_ADMIN_PASSWORD),
-        role=UserRole.SUPER_ADMIN
-    )
+    # 使用原生 SQL 创建超级管理员，确保 role 值正确
+    user_id = uuid.uuid4()
+    password_hash = get_password_hash(settings.SUPER_ADMIN_PASSWORD)
     
-    db.add(super_admin)
+    db.execute(text("""
+        INSERT INTO users (id, tenant_id, username, email, password_hash, role, created_at)
+        VALUES (:id, :tenant_id, :username, :email, :password_hash, 'super_admin'::userrole, NOW())
+    """), {
+        "id": str(user_id),
+        "tenant_id": str(tenant_id),
+        "username": settings.SUPER_ADMIN_USERNAME,
+        "email": settings.SUPER_ADMIN_EMAIL,
+        "password_hash": password_hash
+    })
+    
     db.commit()
-    db.refresh(super_admin)
     
     logger.info(f"Created super admin: {settings.SUPER_ADMIN_EMAIL}")
     logger.info(f"Username: {settings.SUPER_ADMIN_USERNAME}")
     logger.info(f"Password: {settings.SUPER_ADMIN_PASSWORD}")
     logger.info("Please change the password after first login!")
-    
-    return super_admin
 
 
 def init_db():
