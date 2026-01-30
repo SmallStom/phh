@@ -19,7 +19,7 @@ def create_tables():
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
     
-    # 添加 image_urls 字段（如果不存在）
+    # 修复 enum 类型和添加字段
     from sqlalchemy import text
     with engine.connect() as conn:
         # 检查 image_urls 字段是否存在
@@ -37,6 +37,56 @@ def create_tables():
             logger.info("Added image_urls column to records table")
         else:
             logger.info("image_urls column already exists")
+        
+        # 删除并重新创建 recordtype enum（使用小写值）
+        conn.execute(text("""
+            DO $$
+            BEGIN
+                -- 如果存在旧 enum，先转换为 text
+                IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordtype') THEN
+                    ALTER TABLE records ALTER COLUMN record_type TYPE TEXT;
+                    DROP TYPE IF EXISTS recordtype;
+                END IF;
+                
+                -- 创建新的 enum（小写值）
+                CREATE TYPE recordtype AS ENUM ('note', 'idea', 'log');
+                
+                -- 转换回 enum 类型
+                ALTER TABLE records ALTER COLUMN record_type TYPE recordtype 
+                    USING record_type::recordtype;
+            EXCEPTION 
+                WHEN duplicate_object THEN 
+                    -- enum 已存在，检查值是否正确
+                    NULL;
+            END $$;
+        """))
+        conn.commit()
+        logger.info("Fixed recordtype enum")
+        
+        # 删除并重新创建 recordstatus enum（使用小写值）
+        conn.execute(text("""
+            DO $$
+            BEGIN
+                -- 如果存在旧 enum，先转换为 text
+                IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordstatus') THEN
+                    ALTER TABLE records ALTER COLUMN status TYPE TEXT;
+                    DROP TYPE IF EXISTS recordstatus;
+                END IF;
+                
+                -- 创建新的 enum（小写值）
+                CREATE TYPE recordstatus AS ENUM ('draft', 'published', 'archived');
+                
+                -- 转换回 enum 类型
+                ALTER TABLE records ALTER COLUMN status TYPE recordstatus 
+                    USING status::recordstatus;
+            EXCEPTION 
+                WHEN duplicate_object THEN 
+                    -- enum 已存在，检查值是否正确
+                    NULL;
+            END $$;
+        """))
+        conn.commit()
+        logger.info("Fixed recordstatus enum")
 
 
 def create_super_admin(db: Session):
