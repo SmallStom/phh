@@ -38,10 +38,14 @@ def create_tables():
         else:
             logger.info("image_urls column already exists")
         
-        # 删除并重新创建 recordtype enum（使用小写值）
+        # 修复 recordtype enum - 先更新数据为小写，再转换类型
         conn.execute(text("""
             DO $$
             BEGIN
+                -- 先更新现有数据为小写
+                UPDATE records SET record_type = LOWER(record_type::text) 
+                WHERE record_type::text != LOWER(record_type::text);
+                
                 -- 如果存在旧 enum，先转换为 text
                 IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordtype') THEN
                     ALTER TABLE records ALTER COLUMN record_type TYPE TEXT;
@@ -63,10 +67,14 @@ def create_tables():
         conn.commit()
         logger.info("Fixed recordtype enum")
         
-        # 删除并重新创建 recordstatus enum（使用小写值）
+        # 修复 recordstatus enum - 先更新数据为小写，再转换类型
         conn.execute(text("""
             DO $$
             BEGIN
+                -- 先更新现有数据为小写
+                UPDATE records SET status = LOWER(status::text) 
+                WHERE status::text != LOWER(status::text);
+                
                 -- 如果存在旧 enum，先转换为 text
                 IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordstatus') THEN
                     ALTER TABLE records ALTER COLUMN status TYPE TEXT;
