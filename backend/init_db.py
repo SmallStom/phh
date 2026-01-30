@@ -18,6 +18,25 @@ logger = logging.getLogger(__name__)
 def create_tables():
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
+    
+    # 添加 image_urls 字段（如果不存在）
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        # 检查 image_urls 字段是否存在
+        result = conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'records' AND column_name = 'image_urls'
+        """))
+        if not result.fetchone():
+            conn.execute(text("""
+                ALTER TABLE records 
+                ADD COLUMN image_urls VARCHAR[] DEFAULT ARRAY[]::VARCHAR[]
+            """))
+            conn.commit()
+            logger.info("Added image_urls column to records table")
+        else:
+            logger.info("image_urls column already exists")
 
 
 def create_super_admin(db: Session):
