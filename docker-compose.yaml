@@ -1,5 +1,11 @@
 version: '3.8'
 
+# 数据持久化说明：
+# - PostgreSQL 数据 → ./data/postgres/
+# - Redis 数据 → ./data/redis/
+# - 上传文件 → ./data/uploads/
+# 数据保存在宿主机目录，即使容器删除也不会丢失
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -7,9 +13,26 @@ services:
     env_file:
       - .env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # 数据挂载到宿主机目录，便于备份和管理
+      - ./data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - phh-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: phh-redis
+    command: redis-server --appendonly yes
+    volumes:
+      # 数据挂载到宿主机目录
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,10 +47,17 @@ services:
     container_name: phh-backend
     env_file:
       - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
     ports:
       - "8000:8000"
+    volumes:
+      # 上传的文件挂载到宿主机
+      - ./data/uploads:/app/uploads
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - phh-network
@@ -47,9 +77,6 @@ services:
     networks:
       - phh-network
     restart: unless-stopped
-
-volumes:
-  postgres_data:
 
 networks:
   phh-network:

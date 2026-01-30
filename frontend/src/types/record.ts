@@ -22,6 +22,7 @@ export interface Record {
   updated_at?: string;
   published_at?: string;
   tags: string[];
+  image_urls?: string[];
   like_count: number;
   comment_count: number;
   is_liked?: boolean;

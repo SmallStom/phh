@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from app.config import settings
-from app.api import auth, records, experiences, collections, tags, likes, comments, admin
+from app.api import auth, records, experiences, collections, tags, likes, comments, admin, follows, upload, analytics, notifications
 from fastapi.exceptions import RequestValidationError
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,14 @@ app.include_router(tags.router)
 app.include_router(likes.router)
 app.include_router(comments.router)
 app.include_router(admin.router)
+app.include_router(follows.router)
+app.include_router(upload.router)
+app.include_router(analytics.router)
+app.include_router(notifications.router)
+
+# 挂载静态文件服务（上传的文件）
+if os.path.exists(settings.UPLOAD_DIR):
+    app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 
 @app.exception_handler(RequestValidationError)

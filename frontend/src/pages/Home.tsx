@@ -6,6 +6,8 @@ import { collectionsApi } from '../api/collections';
 import { likesApi } from '../api/likes';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
+import { HotContent } from '../components/HotContent';
+import CommentModal from '../components/CommentModal';
 import type { Record } from '../types/record';
 import type { Experience } from '../types/experience';
 import type { Collection } from '../types/collection';
@@ -32,6 +34,10 @@ export const Home: React.FC = () => {
     collections: [],
   });
   const [searched, setSearched] = useState(false);
+  
+  // 评论弹窗状态
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
 
   // 监听路由变化，恢复搜索状态
   useEffect(() => {
@@ -192,6 +198,32 @@ export const Home: React.FC = () => {
     }
   };
 
+  // 打开评论弹窗
+  const handleOpenComments = (e: React.MouseEvent, record: Record) => {
+    e.stopPropagation();
+    setSelectedRecord(record);
+    setCommentModalOpen(true);
+  };
+
+  // 关闭评论弹窗
+  const handleCloseComments = () => {
+    setCommentModalOpen(false);
+    setSelectedRecord(null);
+  };
+
+  // 评论添加后的回调
+  const handleCommentAdded = () => {
+    if (selectedRecord) {
+      // 更新评论数
+      const updatedRecords = publicRecords.map(r => 
+        r.id === selectedRecord.id 
+          ? { ...r, comment_count: (r.comment_count || 0) + 1 }
+          : r
+      );
+      setPublicRecords(updatedRecords);
+    }
+  };
+
   const handleExperienceClick = (experienceId: string) => {
     localStorage.setItem('fromSource', 'plaza');
     navigate(`/experiences/${experienceId}`);
@@ -204,23 +236,23 @@ export const Home: React.FC = () => {
 
   if (!authChecked) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-gray-600">加载中...</div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-600 dark:text-gray-400">加载中...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="fixed top-16 left-0 right-0 bg-gradient-to-br from-blue-50 to-indigo-100 z-30">
+    <div className="min-h-screen dark:text-gray-100">
+      <div className="fixed top-16 left-0 right-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 z-30">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center space-x-8">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">美好广场</h1>
-              <p className="text-sm text-gray-600">发现和分享美好的瞬间</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">美好广场</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">发现和分享美好的瞬间</p>
             </div>
 
-            <div className="flex-1 bg-white rounded-xl shadow-md p-3">
+            <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-md p-3">
               <div className="flex space-x-3">
                 <div className="flex-1 relative">
                   <input
@@ -228,7 +260,7 @@ export const Home: React.FC = () => {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="搜索美好、风采、收藏..."
                   />
                   {query && (
@@ -254,12 +286,15 @@ export const Home: React.FC = () => {
         </div>
       </div>
       
-      <div className="max-w-6xl mx-auto px-4 pt-28">
+      <div className="max-w-7xl mx-auto px-4 pt-28">
+        <div className="flex gap-6">
+          {/* 主内容区 */}
+          <div className="flex-1">
         {searched ? (
           <div className="space-y-8">
             {results.records.length > 0 && (
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   今日美好 ({results.records.length})
                 </h2>
                 <div className="space-y-3">
@@ -267,19 +302,19 @@ export const Home: React.FC = () => {
                     <div
                       key={record.id}
                       onClick={() => handleRecordClick(record.id)}
-                      className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                      className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium text-gray-900 flex-1">
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100 flex-1">
                           {record.title || '无标题'}
                         </h3>
                         {record.user && (
-                          <span className="text-sm text-gray-500 ml-2">
+                          <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
                             by {record.user.username}
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm line-clamp-2 mb-2">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-2">
                         {record.content}
                       </p>
                       <div className="flex items-center space-x-3 text-sm text-gray-500">
@@ -294,10 +329,13 @@ export const Home: React.FC = () => {
                           <span className="mr-1">{record.is_liked ? '❤️' : '🤍'}</span>
                           <span className="font-medium">{record.like_count || 0}</span>
                         </button>
-                        <span className="flex items-center">
+                        <button
+                          onClick={(e) => handleOpenComments(e, record)}
+                          className="flex items-center px-2 py-1 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        >
                           <span className="mr-1">💬</span>
-                          {record.comment_count || 0}
-                        </span>
+                          <span className="font-medium">{record.comment_count || 0}</span>
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -307,7 +345,7 @@ export const Home: React.FC = () => {
             
             {results.experiences.length > 0 && (
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   往日风采 ({results.experiences.length})
                 </h2>
                 <div className="space-y-3">
@@ -315,17 +353,17 @@ export const Home: React.FC = () => {
                     <div
                       key={exp.id}
                       onClick={() => handleExperienceClick(exp.id)}
-                      className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                      className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-medium text-gray-900 flex-1">{exp.title}</h3>
+                        <h3 className="font-medium text-gray-900 dark:text-gray-100 flex-1">{exp.title}</h3>
                         {exp.user && (
-                          <span className="text-sm text-gray-500 ml-2">
+                          <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
                             by {exp.user.username}
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm line-clamp-2">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
                         {exp.description}
                       </p>
                     </div>
@@ -336,7 +374,7 @@ export const Home: React.FC = () => {
             
             {results.collections.length > 0 && isAuthenticated && (
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   收藏 ({results.collections.length})
                 </h2>
                 <div className="space-y-3">
@@ -344,10 +382,10 @@ export const Home: React.FC = () => {
                     <div
                       key={collection.id}
                       onClick={() => handleCollectionClick(collection)}
-                      className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                      className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
                     >
-                      <h3 className="font-medium text-gray-900 mb-1">{collection.title}</h3>
-                      <p className="text-gray-600 text-sm line-clamp-2">
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-1">{collection.title}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2">
                         {collection.description}
                       </p>
                     </div>
@@ -359,7 +397,7 @@ export const Home: React.FC = () => {
             {results.records.length === 0 &&
              results.experiences.length === 0 &&
              (results.collections.length === 0 || !isAuthenticated) && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 没有找到相关内容
               </div>
             )}
@@ -371,9 +409,9 @@ export const Home: React.FC = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               </div>
             ) : publicRecords.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-xl p-12 text-center border border-gray-100">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-12 text-center border border-gray-100 dark:border-gray-700">
                 <div className="text-6xl mb-4">🌟</div>
-                <p className="text-gray-500 text-lg">广场上还没有内容，快来发布第一条今日美好吧！</p>
+                <p className="text-gray-500 dark:text-gray-400 text-lg">广场上还没有内容，快来发布第一条今日美好吧！</p>
                 {isAuthenticated && (
                   <button
                     onClick={() => navigate('/records')}
@@ -389,23 +427,54 @@ export const Home: React.FC = () => {
                   <div
                     key={record.id}
                     onClick={() => handleRecordClick(record.id)}
-                    className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all border border-gray-100 group cursor-pointer"
+                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8 hover:shadow-xl transition-all border border-gray-100 dark:border-gray-700 group cursor-pointer"
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
-                        <h2 className="text-2xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 transition-colors">
                           {record.title || '无标题'}
                         </h2>
                         {record.user && (
-                          <div className="text-sm text-gray-500 mt-1">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             by {record.user.username}
                           </div>
                         )}
                       </div>
                     </div>
-                    <p className="text-gray-600 line-clamp-3 mb-4 leading-relaxed text-lg">
+                    <p className="text-gray-600 dark:text-gray-300 line-clamp-3 mb-4 leading-relaxed text-lg">
                       {record.content}
                     </p>
+                    
+                    {/* 图片展示 */}
+                    {record.image_urls && record.image_urls.length > 0 && (
+                      <div className="mb-4">
+                        <div className={`grid gap-2 ${
+                          record.image_urls.length === 1 
+                            ? 'grid-cols-1' 
+                            : record.image_urls.length === 2 
+                              ? 'grid-cols-2' 
+                              : 'grid-cols-3'
+                        }`}>
+                          {record.image_urls.map((url, index) => (
+                            <div 
+                              key={index} 
+                              className="relative aspect-video rounded-lg overflow-hidden bg-gray-100"
+                            >
+                              <img
+                                src={url}
+                                alt={`图片 ${index + 1}`}
+                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span className="px-3 py-1 bg-gray-100 rounded-full text-xs font-medium">
@@ -426,16 +495,19 @@ export const Home: React.FC = () => {
                           <span className="mr-1">{record.is_liked ? '❤️' : '🤍'}</span>
                           <span className="font-medium">{record.like_count || 0}</span>
                         </button>
-                        <span className="flex items-center">
+                        <button
+                          onClick={(e) => handleOpenComments(e, record)}
+                          className="flex items-center px-2 py-1 rounded-full transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        >
                           <span className="mr-1">💬</span>
-                          {record.comment_count || 0}
-                        </span>
+                          <span className="font-medium">{record.comment_count || 0}</span>
+                        </button>
                         {record.tags.length > 0 && (
                           <>
                             <span>•</span>
                             <div className="flex space-x-1">
                               {record.tags.slice(0, 3).map((tag) => (
-                                <span key={tag} className="text-blue-600 font-medium">#{tag}</span>
+                                <span key={tag} className="text-blue-600 dark:text-blue-400 font-medium">#{tag}</span>
                               ))}
                             </div>
                           </>
@@ -453,17 +525,17 @@ export const Home: React.FC = () => {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md border border-gray-200 font-medium"
+                    className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md border border-gray-200 dark:border-gray-600 font-medium"
                   >
                     ← 上一页
                   </button>
-                  <span className="px-6 py-3 bg-white text-gray-700 rounded-xl shadow-md border border-gray-200 font-medium">
+                  <span className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl shadow-md border border-gray-200 dark:border-gray-600 font-medium">
                     第 {page} 页 / 共 {Math.ceil(total / pageSize)} 页
                   </span>
                   <button
                     onClick={() => setPage((p) => p + 1)}
                     disabled={page * pageSize >= total}
-                    className="px-6 py-3 bg-white text-gray-700 rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md border border-gray-200 font-medium"
+                    className="px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md border border-gray-200 dark:border-gray-600 font-medium"
                   >
                     下一页 →
                   </button>
@@ -471,11 +543,11 @@ export const Home: React.FC = () => {
                 
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <span className="text-gray-600">每页显示：</span>
+                    <span className="text-gray-600 dark:text-gray-400">每页显示：</span>
                     <select
                       value={pageSize}
                       onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value={10}>10条</option>
                       <option value={20}>20条</option>
@@ -486,7 +558,7 @@ export const Home: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <span className="text-gray-600">跳转到：</span>
+                    <span className="text-gray-600 dark:text-gray-400">跳转到：</span>
                     <input
                       type="number"
                       value={jumpToPage}
@@ -494,7 +566,7 @@ export const Home: React.FC = () => {
                       onKeyPress={handleKeyPress}
                       min={1}
                       max={Math.ceil(total / pageSize)}
-                      className="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-24 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="页码"
                     />
                     <button
@@ -510,7 +582,25 @@ export const Home: React.FC = () => {
             )}
           </>
         )}
+          </div>
+          
+          {/* 侧边栏 */}
+          <div className="w-80 hidden lg:block">
+            <div className="sticky top-28 space-y-6">
+              <HotContent />
+            </div>
+          </div>
+        </div>
       </div>
+      
+      {/* 评论弹窗 */}
+      <CommentModal
+        isOpen={commentModalOpen}
+        onClose={handleCloseComments}
+        recordId={selectedRecord?.id || ''}
+        recordTitle={selectedRecord?.title}
+        onCommentAdded={handleCommentAdded}
+      />
     </div>
   );
 };

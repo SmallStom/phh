@@ -1,72 +1,39 @@
-const parseDate = (dateString: string): Date => {
-  if (!dateString) {
-    return new Date();
-  }
-  
-  const date = new Date(dateString);
-  
-  if (isNaN(date.getTime())) {
-    console.warn('Invalid date string:', dateString);
-    return new Date();
-  }
-  
-  return date;
-};
+/**
+ * 日期时间工具函数
+ * 已弃用：请使用 time.ts 中的函数，统一使用北京时间
+ */
 
+import {
+  formatDateTime as formatDateTimeBeijing,
+  formatDate as formatDateBeijing,
+  formatTimeOnly as formatTimeBeijing,
+  formatRelativeTime as formatRelativeTimeBeijing,
+} from './time';
 
-
+/**
+ * @deprecated 请使用 time.ts 中的 formatDateTime
+ */
 export const formatDateTime = (dateString: string): string => {
-  const date = parseDate(dateString);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
+  return formatDateTimeBeijing(dateString);
 };
 
+/**
+ * @deprecated 请使用 time.ts 中的 formatDate
+ */
 export const formatDate = (dateString: string): string => {
-  const date = parseDate(dateString);
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
+  return formatDateBeijing(dateString);
 };
 
+/**
+ * @deprecated 请使用 time.ts 中的 formatTimeOnly
+ */
 export const formatTime = (dateString: string): string => {
-  const date = parseDate(dateString);
-  return date.toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
+  return formatTimeBeijing(dateString);
 };
 
+/**
+ * @deprecated 请使用 time.ts 中的 formatRelativeTime
+ */
 export const formatRelativeTime = (dateString: string): string => {
-  const date = parseDate(dateString);
-  const now = new Date();
-  
-  const diff = now.getTime() - date.getTime();
-  
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  
-  if (seconds < 60) {
-    return '刚刚';
-  } else if (minutes < 60) {
-    return `${minutes}分钟前`;
-  } else if (hours < 24) {
-    return `${hours}小时前`;
-  } else if (days < 7) {
-    return `${days}天前`;
-  } else {
-    return formatDate(dateString);
-  }
+  return formatRelativeTimeBeijing(dateString);
 };

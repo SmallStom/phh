@@ -400,6 +400,37 @@ export const RecordDetail: React.FC = () => {
               <p className="text-gray-700 whitespace-pre-wrap">{record.content}</p>
             </div>
             
+            {/* 图片展示 */}
+            {record.image_urls && record.image_urls.length > 0 && (
+              <div className="mt-6">
+                <div className={`grid gap-4 ${
+                  record.image_urls.length === 1 
+                    ? 'grid-cols-1' 
+                    : record.image_urls.length === 2 
+                      ? 'grid-cols-2' 
+                      : 'grid-cols-3'
+                }`}>
+                  {record.image_urls.map((url, index) => (
+                    <div 
+                      key={index} 
+                      className="relative aspect-video rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(url, '_blank')}
+                    >
+                      <img
+                        src={url}
+                        alt={`图片 ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {record.tags.length > 0 && (
               <div className="mt-6 flex space-x-2">
                 {record.tags.map((tag) => (

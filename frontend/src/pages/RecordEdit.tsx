@@ -4,6 +4,7 @@ import { recordsApi } from '../api/records';
 import { useAuthStore } from '../store/authStore';
 import type { RecordCreate } from '../types/record';
 import { TagInput } from '../components/TagInput';
+import { RichTextEditor } from '../components/RichTextEditor';
 import { useRecordDraft } from '../hooks/useDraftSave';
 
 export const RecordEdit: React.FC = () => {
@@ -101,26 +102,26 @@ export const RecordEdit: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">新建美好</h1>
       </div>
 
-      <form className="bg-white rounded-lg shadow-md p-6 space-y-6">
+      <form className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-6 transition-colors duration-200">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             标题（可选）
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200"
             placeholder="输入标题..."
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             类型
           </label>
           <div className="flex space-x-4">
-            <label className="flex items-center">
+            <label className="flex items-center text-gray-700 dark:text-gray-300">
               <input
                 type="radio"
                 value="note"
@@ -130,7 +131,7 @@ export const RecordEdit: React.FC = () => {
               />
               笔记
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center text-gray-700 dark:text-gray-300">
               <input
                 type="radio"
                 value="idea"
@@ -140,7 +141,7 @@ export const RecordEdit: React.FC = () => {
               />
               想法
             </label>
-            <label className="flex items-center">
+            <label className="flex items-center text-gray-700 dark:text-gray-300">
               <input
                 type="radio"
                 value="log"
@@ -154,20 +155,19 @@ export const RecordEdit: React.FC = () => {
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             内容
           </label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-96 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          <RichTextEditor
+            content={content}
+            onChange={setContent}
             placeholder="写下你的想法..."
-            required
+            className="min-h-[300px]"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             标签
           </label>
           <TagInput
@@ -204,7 +204,7 @@ export const RecordEdit: React.FC = () => {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300"
           >
             取消
           </button>

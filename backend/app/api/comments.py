@@ -6,6 +6,11 @@ from app.models.user import User
 from app.models.record import Record
 from app.models.comment import Comment
 from app.schemas.comment import CommentCreate, CommentResponse, CommentListResponse
+from app.core.notification import notification_service
+from app.core.analytics import analytics_service
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/records", tags=["comments"])
 
@@ -17,7 +22,9 @@ async def create_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    record = db.query(Record).filter(
+    record = db.query(Record).options(
+        joinedload(Record.user)
+    ).filter(
         Record.id == record_id,
         Record.is_public == True
     ).first()
@@ -38,6 +45,25 @@ async def create_comment(
     db.add(comment)
     db.commit()
     db.refresh(comment)
+    
+    # 更新热门排行
+    analytics_service._update_hot_ranking("record", record_id, 3)
+    
+    # 发送站内通知
+    try:
+        if record.user and record.user.id != current_user.id:
+            notification_service.notify_comment(
+                db=db,
+                recipient_id=str(record.user.id),
+                sender_id=str(current_user.id),
+                sender_name=current_user.username,
+                content_type="记录",
+                content_title=record.title or "无标题",
+                comment_content=comment_data.content,
+                content_id=record_id
+            )
+    except Exception as e:
+        logger.error(f"Failed to create comment notification: {e}")
     
     return CommentResponse.model_validate(comment)
 

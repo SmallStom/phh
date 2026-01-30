@@ -8,6 +8,8 @@ from app.models.tag import Tag
 from app.models.content_tag import ContentTag
 from app.models.like import Like
 from app.models.comment import Comment
+from app.models.follow import Follow
+from app.models.notification import Notification, NotificationType
 from app.core.database import Base
 
 __all__ = [
@@ -27,4 +29,7 @@ __all__ = [
     "ContentTag",
     "Like",
     "Comment",
+    "Follow",
+    "Notification",
+    "NotificationType",
 ]

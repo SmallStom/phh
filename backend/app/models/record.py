@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, ForeignKey, Boolean, DateTime, Enum as SQLEnum, and_
+from sqlalchemy import Column, String, Text, ForeignKey, Boolean, DateTime, Enum as SQLEnum, and_, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, foreign
 import enum
@@ -29,6 +29,7 @@ class Record(BaseModel):
     parent_id = Column(UUID(as_uuid=True), ForeignKey("records.id"))
     is_public = Column(Boolean, default=False)
     published_at = Column(DateTime(timezone=True))
+    image_urls = Column(ARRAY(String), default=list)  # 图片URL数组
     
     tenant = relationship("Tenant", back_populates="records")
     user = relationship("User", back_populates="records")

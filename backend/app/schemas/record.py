@@ -25,6 +25,7 @@ class RecordBase(BaseModel):
     record_type: RecordType = RecordType.NOTE
     parent_id: Optional[str] = None
     is_public: bool = False
+    image_urls: Optional[List[str]] = []
     
     class Config:
         use_enum_values = True
@@ -52,9 +53,17 @@ class RecordResponse(RecordBase):
     updated_at: Optional[datetime] = None
     published_at: Optional[datetime] = None
     tags: List[str] = []
+    image_urls: List[str] = []
     like_count: int = 0
     comment_count: int = 0
     is_liked: bool = False
+    
+    @field_validator('image_urls', mode='before')
+    @classmethod
+    def validate_image_urls(cls, v):
+        if v is None:
+            return []
+        return v
     
     @field_serializer('created_at', 'updated_at', 'published_at')
     @classmethod

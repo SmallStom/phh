@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
-from typing import Union
+from typing import Union, Optional
 import warnings
 import os
 
@@ -19,6 +19,16 @@ class Settings(BaseSettings):
     SUPER_ADMIN_TENANT_SLUG: str = "system"
     
     ENVIRONMENT: str = "development"
+    
+    # Redis配置
+    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_ENABLED: bool = True
+    
+    # 文件上传配置
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE: int = 10 * 1024 * 1024  # 10MB
+    ALLOWED_IMAGE_TYPES: list = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    ALLOWED_FILE_TYPES: list = ["application/pdf", "text/plain", "application/json"]
     
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

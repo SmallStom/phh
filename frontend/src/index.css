@@ -2,30 +2,118 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* 暗黑模式基础样式 */
+  .dark body {
+    @apply bg-gray-900 text-gray-100;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  /* 暗黑模式卡片样式 */
+  .dark .card {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  /* 暗黑模式输入框样式 */
+  .dark input,
+  .dark textarea,
+  .dark select {
+    @apply bg-gray-800 border-gray-700 text-gray-100;
+  }
+
+  /* 暗黑模式按钮样式 */
+  .dark .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700;
+  }
+
+  .dark .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-100;
+  }
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* Prose 编辑器暗黑模式样式 */
+.dark .prose {
+  @apply text-gray-100;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6 {
+  @apply text-gray-100;
+}
+
+.dark .prose p {
+  @apply text-gray-300;
+}
+
+.dark .prose blockquote {
+  @apply border-gray-600 text-gray-400;
+}
+
+.dark .prose code {
+  @apply bg-gray-800 text-gray-200;
+}
+
+.dark .prose pre {
+  @apply bg-gray-800;
+}
+
+.dark .prose strong {
+  @apply text-gray-100;
+}
+
+.dark .prose a {
+  @apply text-blue-400;
+}
+
+.dark .prose ul,
+.dark .prose ol {
+  @apply text-gray-300;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
 }
