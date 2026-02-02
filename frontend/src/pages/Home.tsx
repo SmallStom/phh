@@ -8,7 +8,7 @@ import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
 import { HotContent } from '../components/HotContent';
 import CommentModal from '../components/CommentModal';
-import type { Record } from '../types/record';
+import type { Record as UserRecord } from '../types/record';
 import type { Experience } from '../types/experience';
 import type { Collection } from '../types/collection';
 
@@ -22,7 +22,7 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, initializeAuth } = useAuthStore();
-  const [publicRecords, setPublicRecords] = useState<Record[]>([]);
+  const [publicRecords, setPublicRecords] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [page, setPage] = useState(1);
@@ -30,7 +30,7 @@ export const Home: React.FC = () => {
   const [pageSize, setPageSize] = useState(20);
   const [jumpToPage, setJumpToPage] = useState('');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<{ records: Record[]; experiences: Experience[]; collections: Collection[] }>({
+  const [results, setResults] = useState<{ records: UserRecord[]; experiences: Experience[]; collections: Collection[] }>({
     records: [], experiences: [], collections: [],
   });
   const [searched, setSearched] = useState(false);
@@ -314,7 +314,7 @@ export const Home: React.FC = () => {
 
 // Search Results Component
 interface SearchResultsProps {
-  results: { records: Record[]; experiences: Experience[]; collections: Collection[] };
+  results: { records: UserRecord[]; experiences: Experience[]; collections: Collection[] };
   isAuthenticated: boolean;
   onRecordClick: (id: string) => void;
   onExperienceClick: (id: string) => void;
@@ -407,7 +407,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 // Content List Component
 interface ContentListProps {
   loading: boolean;
-  publicRecords: Record[];
+  publicRecords: UserRecord[];
   total: number;
   page: number;
   pageSize: number;

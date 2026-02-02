@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { recordsApi } from '../api/records';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
-import type { Record } from '../types/record';
+import type { Record as UserRecord } from '../types/record';
 
 const typeIcons: Record<string, { icon: string; label: string; color: string }> = {
   note: { icon: '✦', label: '笔记', color: 'bg-forest-100 text-forest-700 dark:bg-forest-900/30 dark:text-forest-300' },
@@ -19,7 +19,7 @@ const statusLabels: Record<string, { label: string; icon: string; color: string 
 
 export const RecordsList: React.FC = () => {
   const { isAuthenticated, initializeAuth } = useAuthStore();
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);

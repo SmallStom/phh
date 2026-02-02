@@ -6,7 +6,7 @@ import { likesApi } from '../api/likes';
 import { commentsApi } from '../api/comments';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
-import type { Record, RecordUpdate } from '../types/record';
+import type { Record as UserRecord, RecordUpdate } from '../types/record';
 import type { Comment } from '../types/comment';
 
 const typeIcons: Record<string, { icon: string; label: string; color: string }> = {
@@ -25,7 +25,7 @@ export const RecordDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, initializeAuth } = useAuthStore();
-  const [record, setRecord] = useState<Record | null>(null);
+  const [record, setRecord] = useState<UserRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<RecordUpdate>({});
@@ -224,18 +224,19 @@ export const RecordDetail: React.FC = () => {
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('确定要删除这条评论吗？')) return;
-    try {
-      await commentsApi.deleteComment(commentId);
-      setComments(comments.filter(c => c.id !== commentId));
-      setTotalComments(totalComments - 1);
-      if (record) setRecord({ ...record, comment_count: record.comment_count - 1 });
-    } catch (error) {
-      console.error('Failed to delete comment:', error);
-      alert('删除失败，请重试');
-    }
-  };
+  // 保留此函数供将来使用 - 删除评论功能
+  // const handleDeleteComment = async (commentId: string) => {
+  //   if (!confirm('确定要删除这条评论吗？')) return;
+  //   try {
+  //     await commentsApi.deleteComment(commentId);
+  //     setComments(comments.filter(c => c.id !== commentId));
+  //     setTotalComments(totalComments - 1);
+  //     if (record) setRecord({ ...record, comment_count: record.comment_count - 1 });
+  //   } catch (error) {
+  //     console.error('Failed to delete comment:', error);
+  //     alert('删除失败，请重试');
+  //   }
+  // };
 
   if (!authChecked) {
     return (
