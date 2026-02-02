@@ -35,7 +35,7 @@ export const Home: React.FC = () => {
   });
   const [searched, setSearched] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<Record | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<UserRecord | null>(null);
 
   useEffect(() => {
     const savedQuery = localStorage.getItem('searchQuery');
@@ -177,7 +177,7 @@ export const Home: React.FC = () => {
     }
   };
 
-  const handleOpenComments = (e: React.MouseEvent, record: Record) => {
+  const handleOpenComments = (e: React.MouseEvent, record: UserRecord) => {
     e.stopPropagation();
     setSelectedRecord(record);
     setCommentModalOpen(true);
@@ -415,7 +415,7 @@ interface ContentListProps {
   isAuthenticated: boolean;
   onRecordClick: (id: string) => void;
   onLike: (e: React.MouseEvent, id: string) => void;
-  onOpenComments: (e: React.MouseEvent, record: Record) => void;
+  onOpenComments: (e: React.MouseEvent, record: UserRecord) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onJumpToPage: (value: string) => void;

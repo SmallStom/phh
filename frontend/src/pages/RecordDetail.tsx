@@ -53,7 +53,7 @@ export const RecordDetail: React.FC = () => {
   const loadRecord = async (recordId: string) => {
     try {
       setLoading(true);
-      let data: Record;
+      let data: UserRecord;
       
       if (isAuthenticated) {
         try { data = await recordsApi.getRecord(recordId); } 
