@@ -18,13 +18,96 @@ logger = logging.getLogger(__name__)
 def create_tables():
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created")
+    
+    # 修复 enum 类型和添加字段
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        # 检查 image_urls 字段是否存在
+        result = conn.execute(text("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'records' AND column_name = 'image_urls'
+        """))
+        if not result.fetchone():
+            conn.execute(text("""
+                ALTER TABLE records 
+                ADD COLUMN image_urls VARCHAR[] DEFAULT ARRAY[]::VARCHAR[]
+            """))
+            conn.commit()
+            logger.info("Added image_urls column to records table")
+        else:
+            logger.info("image_urls column already exists")
+        
+        # 修复 recordtype enum
+        conn.execute(text("""
+            DO $$
+            DECLARE
+                v_current_type TEXT;
+            BEGIN
+                -- 检查 enum 是否存在
+                IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordtype') THEN
+                    -- 先转为 text 类型
+                    ALTER TABLE records ALTER COLUMN record_type TYPE TEXT;
+                    
+                    -- 更新数据为小写
+                    UPDATE records SET record_type = LOWER(record_type) 
+                    WHERE record_type IS NOT NULL AND record_type != LOWER(record_type);
+                    
+                    -- 删除旧 enum
+                    DROP TYPE IF EXISTS recordtype;
+                END IF;
+                
+                -- 创建新的 enum（小写值）
+                CREATE TYPE recordtype AS ENUM ('note', 'idea', 'log');
+                
+                -- 转换回 enum 类型
+                ALTER TABLE records ALTER COLUMN record_type TYPE recordtype 
+                    USING record_type::recordtype;
+            EXCEPTION 
+                WHEN duplicate_object THEN 
+                    NULL;
+            END $$;
+        """))
+        conn.commit()
+        logger.info("Fixed recordtype enum")
+        
+        # 修复 recordstatus enum
+        conn.execute(text("""
+            DO $$
+            BEGIN
+                -- 检查 enum 是否存在
+                IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recordstatus') THEN
+                    -- 先转为 text 类型
+                    ALTER TABLE records ALTER COLUMN status TYPE TEXT;
+                    
+                    -- 更新数据为小写
+                    UPDATE records SET status = LOWER(status) 
+                    WHERE status IS NOT NULL AND status != LOWER(status);
+                    
+                    -- 删除旧 enum
+                    DROP TYPE IF EXISTS recordstatus;
+                END IF;
+                
+                -- 创建新的 enum（小写值）
+                CREATE TYPE recordstatus AS ENUM ('draft', 'published', 'archived');
+                
+                -- 转换回 enum 类型
+                ALTER TABLE records ALTER COLUMN status TYPE recordstatus 
+                    USING status::recordstatus;
+            EXCEPTION 
+                WHEN duplicate_object THEN 
+                    NULL;
+            END $$;
+        """))
+        conn.commit()
+        logger.info("Fixed recordstatus enum")
 
 
 def create_super_admin(db: Session):
     from sqlalchemy import text
     import uuid
     
-    # 使用原生 SQL 查询
+    # 使用原生 SQL 查询，避免 enum 转换问题
     result = db.execute(text("SELECT id FROM users WHERE email = :email"), {
         "email": settings.SUPER_ADMIN_EMAIL
     })

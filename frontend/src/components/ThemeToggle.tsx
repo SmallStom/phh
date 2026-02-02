@@ -11,10 +11,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
   return (
     <button
       onClick={toggleTheme}
-      className={`p-2 rounded-lg transition-colors duration-200 ${
+      className={`p-2.5 rounded-xl transition-all duration-300 hover:scale-105 ${
         isDarkMode
-          ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          ? 'bg-[var(--bg-secondary)] text-terracotta-400 hover:bg-[var(--border-color)]'
+          : 'bg-[var(--bg-secondary)] text-terracotta-600 hover:bg-[var(--border-color)]'
       } ${className}`}
       title={isDarkMode ? '切换到亮色模式' : '切换到暗黑模式'}
     >

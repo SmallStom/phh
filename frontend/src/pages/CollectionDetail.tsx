@@ -13,12 +13,17 @@ export const CollectionDetail: React.FC = () => {
   const [collection, setCollection] = useState<Collection | null>(null);
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-  const [fromPlaza, setFromPlaza] = useState(false);
+  const [fromSource, setFromSource] = useState<string | null>(null);
 
   useEffect(() => {
     initializeAuth();
     setAuthChecked(true);
   }, []);
+
+  // 页面加载时滚动到顶部
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   useEffect(() => {
     if (authChecked && isAuthenticated && id) {
@@ -27,10 +32,8 @@ export const CollectionDetail: React.FC = () => {
   }, [authChecked, isAuthenticated, id]);
 
   useEffect(() => {
-    const fromPlazaFlag = localStorage.getItem('fromPlaza');
-    if (fromPlazaFlag === 'true') {
-      setFromPlaza(true);
-    }
+    const source = localStorage.getItem('fromSource');
+    setFromSource(source);
   }, [location.key]);
 
   const loadCollection = async () => {
@@ -56,19 +59,17 @@ export const CollectionDetail: React.FC = () => {
   };
 
   const getBackText = () => {
-    if (fromPlaza) return '返回广场';
-    if (collection?.content_type === 'record') return '返回美好';
-    if (collection?.content_type === 'experience') return '返回往日风采';
+    if (fromSource === 'plaza') return '返回广场';
+    if (fromSource === 'collections') return '返回收藏';
     return '返回收藏';
   };
+
   const handleBack = () => {
-    localStorage.setItem('fromPlaza', 'false');
-    if (fromPlaza) {
+    localStorage.removeItem('fromSource');
+    if (fromSource === 'plaza') {
       navigate('/');
-    } else if (collection?.content_type === 'record') {
-      navigate('/records');
-    } else if (collection?.content_type === 'experience') {
-      navigate('/experiences');
+    } else if (fromSource === 'collections') {
+      navigate('/collections');
     } else {
       navigate('/collections');
     }

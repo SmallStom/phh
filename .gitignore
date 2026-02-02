@@ -80,3 +80,6 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
+
+# trae 文件夹
+.trae/
