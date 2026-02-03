@@ -5,7 +5,7 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.tenant import Tenant
-from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse, TenantResponse
+from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse, TenantResponse, UserUpdate, UserProfileResponse
 from datetime import timedelta
 from app.config import settings
 import logging
@@ -93,3 +93,86 @@ async def login(credentials: UserLogin, request: Request, db: Session = Depends(
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
+
+
+@router.put("/me", response_model=UserResponse)
+async def update_me(
+    user_data: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """更新当前用户信息"""
+    # 检查用户名是否已被其他用户使用
+    if user_data.username and user_data.username != current_user.username:
+        existing_user = db.query(User).filter(
+            User.username == user_data.username,
+            User.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+    
+    # 更新用户信息
+    if user_data.username is not None:
+        current_user.username = user_data.username
+    if user_data.bio is not None:
+        current_user.bio = user_data.bio
+    if user_data.location is not None:
+        current_user.location = user_data.location
+    if user_data.website is not None:
+        current_user.website = user_data.website
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return UserResponse.model_validate(current_user)
+
+
+@router.get("/me/profile", response_model=UserProfileResponse)
+async def get_my_profile(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取当前用户的完整资料（包含统计数据）"""
+    from app.models.record import Record
+    from app.models.experience import Experience
+    from app.models.collection import Collection
+    from app.models.like import Like
+    from app.models.comment import Comment
+    
+    # 统计数据
+    records_count = db.query(Record).filter(Record.user_id == current_user.id).count()
+    experiences_count = db.query(Experience).filter(Experience.user_id == current_user.id).count()
+    collections_count = db.query(Collection).filter(Collection.user_id == current_user.id).count()
+    
+    # 获取用户所有记录
+    user_records = db.query(Record).filter(Record.user_id == current_user.id).all()
+    record_ids = [r.id for r in user_records]
+    
+    # 获赞数和评论数
+    likes_received = 0
+    comments_received = 0
+    if record_ids:
+        likes_received = db.query(Like).filter(Like.record_id.in_(record_ids)).count()
+        comments_received = db.query(Comment).filter(Comment.record_id.in_(record_ids)).count()
+    
+    return UserProfileResponse(
+        id=str(current_user.id),
+        username=current_user.username,
+        email=current_user.email,
+        role=current_user.role,
+        created_at=current_user.created_at,
+        avatar=current_user.avatar,
+        bio=current_user.bio,
+        location=current_user.location,
+        website=current_user.website,
+        followers_count=current_user.followers_count,
+        following_count=current_user.following_count,
+        records_count=records_count,
+        experiences_count=experiences_count,
+        collections_count=collections_count,
+        likes_received=likes_received,
+        comments_received=comments_received
+    )

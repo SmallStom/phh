@@ -4,6 +4,26 @@ export interface User {
   email: string;
   role: 'user' | 'admin' | 'super_admin';
   created_at: string;
+  avatar?: string;
+  bio?: string;
+  location?: string;
+  website?: string;
+}
+
+export interface UserStats {
+  records_count: number;
+  experiences_count: number;
+  collections_count: number;
+  likes_received: number;
+  comments_received: number;
+  followers_count: number;
+  following_count: number;
+  streak_days?: number;
+}
+
+export interface ActivityData {
+  date: string;
+  count: number;
 }
 
 export interface Tenant {

@@ -7,6 +7,7 @@ export const experiencesApi = {
     page_size?: number;
     category?: string;
     year?: number;
+    search?: string;
   }): Promise<ExperienceListResponse> {
     const response = await api.get<ExperienceListResponse>('/experiences', { params });
     return response.data;

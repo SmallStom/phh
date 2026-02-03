@@ -1,26 +1,18 @@
-import apiClient from './client';
-
-export enum NotificationType {
-  LIKE = 'like',
-  COMMENT = 'comment',
-  FOLLOW = 'follow',
-  COLLECT = 'collect',
-  SYSTEM = 'system',
-}
+import api from './client';
 
 export interface Notification {
   id: string;
-  recipient_id: string;
-  sender_id?: string;
-  type: NotificationType;
+  type: 'like' | 'comment' | 'follow' | 'system' | 'collect' | 'mention';
   title: string;
   content?: string;
-  resource_type?: string;
-  resource_id?: string;
   is_read: boolean;
   created_at: string;
+  sender_id?: string;
   sender_username?: string;
   sender_avatar?: string;
+  resource_type?: 'record' | 'experience' | 'collection' | 'comment' | 'user';
+  resource_id?: string;
+  resource_title?: string;
 }
 
 export interface NotificationListResponse {
@@ -37,39 +29,52 @@ export interface NotificationCountResponse {
 }
 
 export const notificationsApi = {
-  // 获取通知列表
-  getNotifications: async (
-    page: number = 1,
-    pageSize: number = 20,
-    unreadOnly: boolean = false
-  ): Promise<{ data: NotificationListResponse }> => {
-    return apiClient.get(
-      `/notifications?page=${page}&page_size=${pageSize}&unread_only=${unreadOnly}`
-    );
+  /**
+   * 获取通知列表
+   */
+  async getNotifications(params?: {
+    page?: number;
+    page_size?: number;
+    unread_only?: boolean;
+  }): Promise<NotificationListResponse> {
+    const response = await api.get<NotificationListResponse>('/notifications', { params });
+    return response.data;
   },
 
-  // 获取通知数量统计
-  getNotificationCount: async (): Promise<{ data: NotificationCountResponse }> => {
-    return apiClient.get('/notifications/count');
+  /**
+   * 获取通知数量统计
+   */
+  async getCount(): Promise<NotificationCountResponse> {
+    const response = await api.get<NotificationCountResponse>('/notifications/count');
+    return response.data;
   },
 
-  // 获取未读通知数量（用于轮询）
-  getUnreadCount: async (): Promise<{ data: { unread_count: number } }> => {
-    return apiClient.get('/notifications/unread-count');
+  /**
+   * 获取未读通知数量
+   */
+  async getUnreadCount(): Promise<number> {
+    const response = await api.get<NotificationCountResponse>('/notifications/count');
+    return response.data.unread;
   },
 
-  // 标记单个通知为已读
-  markAsRead: async (notificationId: string): Promise<{ data: { success: boolean } }> => {
-    return apiClient.put(`/notifications/${notificationId}/read`);
+  /**
+   * 标记单个通知为已读
+   */
+  async markAsRead(notificationId: string): Promise<void> {
+    await api.put(`/notifications/${notificationId}/read`);
   },
 
-  // 标记所有通知为已读
-  markAllAsRead: async (): Promise<{ data: { success: boolean; marked_count: number } }> => {
-    return apiClient.put('/notifications/read-all');
+  /**
+   * 标记所有通知为已读
+   */
+  async markAllAsRead(): Promise<void> {
+    await api.put('/notifications/read-all');
   },
 
-  // 删除通知
-  deleteNotification: async (notificationId: string): Promise<{ data: { success: boolean } }> => {
-    return apiClient.delete(`/notifications/${notificationId}`);
+  /**
+   * 删除通知
+   */
+  async deleteNotification(notificationId: string): Promise<void> {
+    await api.delete(`/notifications/${notificationId}`);
   },
 };

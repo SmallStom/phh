@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from typing import List
+from sqlalchemy.orm import Session
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.core.upload import upload_service
+from app.core.database import get_db
+from app.schemas.auth import UserResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -90,3 +93,42 @@ async def upload_multiple_images(
         "data": results,
         "errors": errors if errors else None
     }
+
+
+@router.post("/avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """上传用户头像"""
+    try:
+        # 验证文件类型
+        allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                detail=f"不支持的文件类型，请上传: {', '.join(allowed_types)}"
+            )
+        
+        # 保存图片
+        result = await upload_service.save_image(
+            file=file,
+            tenant_id=str(current_user.tenant_id),
+            user_id=str(current_user.id)
+        )
+        
+        # 更新用户头像
+        current_user.avatar = result['url']
+        db.commit()
+        db.refresh(current_user)
+        
+        return UserResponse.model_validate(current_user)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Avatar upload failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="头像上传失败"
+        )

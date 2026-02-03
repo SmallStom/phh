@@ -38,6 +38,24 @@ def create_tables():
         else:
             logger.info("image_urls column already exists")
         
+        # 检查 users 表的新字段
+        new_user_columns = ['avatar', 'bio', 'location', 'website']
+        for column in new_user_columns:
+            result = conn.execute(text(f"""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'users' AND column_name = '{column}'
+            """))
+            if not result.fetchone():
+                conn.execute(text(f"""
+                    ALTER TABLE users 
+                    ADD COLUMN {column} VARCHAR(500)
+                """))
+                conn.commit()
+                logger.info(f"Added {column} column to users table")
+            else:
+                logger.info(f"{column} column already exists")
+        
         # 修复 recordtype enum
         conn.execute(text("""
             DO $$

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import type { ExperienceCreate } from '../types/experience';
 import type { RecordCreate } from '../types/record';
 
@@ -9,78 +9,85 @@ interface UseDraftSaveOptions<T> {
   onAutoSave?: (data: T) => void;
 }
 
+// 从 localStorage 读取草稿
+function loadDraft<T>(storageKey: string, defaultValue: T): T {
+  if (typeof window === 'undefined') return defaultValue;
+  
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Failed to load draft:', error);
+  }
+  return defaultValue;
+}
+
 export function useDraftSave<T>({
   storageKey,
   defaultValue,
   autoSaveDelay = 2000,
   onAutoSave
 }: UseDraftSaveOptions<T>) {
-  const [data, setData] = useState<T>(() => {
-    if (typeof window === 'undefined') return defaultValue;
-    
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (error) {
-      console.error('Failed to load draft:', error);
-    }
-    return defaultValue;
-  });
+  // 使用 ref 存储所有状态，避免触发重新渲染
+  const dataRef = useRef<T>(loadDraft(storageKey, defaultValue));
+  const lastSavedRef = useRef<Date | null>(null);
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [isDirty, setIsDirty] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  // 初始化 lastSavedRef
+  if (typeof window !== 'undefined' && lastSavedRef.current === null) {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      lastSavedRef.current = new Date();
+    }
+  }
 
   const save = useCallback((newData: T) => {
-    setData(newData);
-    setIsDirty(true);
+    // 更新 ref，不触发渲染
+    dataRef.current = newData;
     
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(newData));
-      setLastSaved(new Date());
-      setIsDirty(false);
-    } catch (error) {
-      console.error('Failed to save draft:', error);
+    // 清除之前的定时器
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
     }
-
-    if (onAutoSave) {
-      onAutoSave(newData);
-    }
-  }, [storageKey, onAutoSave]);
+    
+    // 设置新的定时器
+    saveTimerRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(newData));
+        lastSavedRef.current = new Date();
+        
+        if (onAutoSave) {
+          onAutoSave(newData);
+        }
+      } catch (error) {
+        console.error('Failed to save draft:', error);
+      }
+    }, autoSaveDelay);
+  }, [storageKey, autoSaveDelay, onAutoSave]);
 
   const clear = useCallback(() => {
-    setData(defaultValue);
-    setLastSaved(null);
-    setIsDirty(false);
+    dataRef.current = defaultValue;
+    lastSavedRef.current = null;
     localStorage.removeItem(storageKey);
   }, [storageKey, defaultValue]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isDirty) {
-        setIsSaving(true);
-        localStorage.setItem(storageKey, JSON.stringify(data));
-        setLastSaved(new Date());
-        setIsDirty(false);
-        setIsSaving(false);
-      }
-    }, autoSaveDelay);
-
-    return () => clearTimeout(timer);
-  }, [data, isDirty, autoSaveDelay, storageKey]);
-
   return {
-    data,
+    data: dataRef.current,
     save,
     clear,
-    lastSaved,
-    isDirty,
-    isSaving,
-    hasDraft: lastSaved !== null
+    hasDraft: lastSavedRef.current !== null
   };
 }
+
+// 静态默认值，避免每次渲染都创建新对象
+const RECORD_DRAFT_DEFAULT = {
+  title: '',
+  content: '',
+  tags: [] as string[],
+  recordType: 'note' as RecordCreate['record_type']
+};
 
 export function useRecordDraft(recordId?: string) {
   const storageKey = recordId 
@@ -89,12 +96,7 @@ export function useRecordDraft(recordId?: string) {
 
   return useDraftSave({
     storageKey,
-    defaultValue: {
-      title: '',
-      content: '',
-      tags: [] as string[],
-      recordType: 'note' as RecordCreate['record_type']
-    },
+    defaultValue: RECORD_DRAFT_DEFAULT,
     autoSaveDelay: 3000
   });
 }
@@ -109,12 +111,13 @@ export function useExperienceDraft(experienceId?: string) {
     defaultValue: {
       title: '',
       description: '',
-      startDate: '',
-      endDate: '',
-      isCurrent: false,
+      tags: [] as string[],
+      start_date: '',
+      end_date: '',
+      is_current: false,
       category: 'project' as ExperienceCreate['category'],
-      tags: [] as string[]
-    },
+      is_public: false
+    } as ExperienceCreate,
     autoSaveDelay: 3000
   });
 }

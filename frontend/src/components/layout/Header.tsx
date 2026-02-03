@@ -3,7 +3,8 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { LoginModal } from './LoginModal';
 import { ThemeToggle } from '../ThemeToggle';
-import { NotificationCenter } from '../NotificationCenter';
+import { NotificationBell } from '../notifications/NotificationBell';
+import { Logo } from '../brand/Logo';
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -55,13 +56,8 @@ export const Header: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <span className="text-2xl font-bold heading-display gradient-text group-hover:scale-105 transition-transform duration-300">
-                美好广场
-              </span>
-              <span className="text-xs text-[var(--text-muted)] heading-hand hidden sm:inline">
-                Beautiful Moments
-              </span>
+            <Link to="/" className="flex items-center gap-3 group">
+              <Logo size="md" animated={false} />
             </Link>
 
             {/* Navigation */}
@@ -95,7 +91,7 @@ export const Header: React.FC = () => {
               
               {isAuthenticated ? (
                 <div className="flex items-center gap-3">
-                  <NotificationCenter />
+                  <NotificationBell />
                   
                   {/* User Menu */}
                   <div className="relative group">
@@ -114,6 +110,12 @@ export const Header: React.FC = () => {
                         <p className="text-sm font-medium text-[var(--text-primary)]">{user?.username}</p>
                         <p className="text-xs text-[var(--text-muted)]">{user?.email}</p>
                       </div>
+                      <Link
+                        to="/profile"
+                        className="block w-full px-4 py-2 text-left text-sm text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:bg-[var(--bg-secondary)] transition-colors duration-200"
+                      >
+                        个人中心
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="w-full px-4 py-2 text-left text-sm text-[var(--text-secondary)] hover:text-[var(--accent-color)] hover:bg-[var(--bg-secondary)] transition-colors duration-200"

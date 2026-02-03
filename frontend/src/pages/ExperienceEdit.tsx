@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { experiencesApi } from '../api/experiences';
 import { useAuthStore } from '../store/authStore';
-import { formatDateTime } from '../utils/dateUtils';
 import type { ExperienceCreate } from '../types/experience';
 import { TagInput } from '../components/TagInput';
 import { useExperienceDraft } from '../hooks/useDraftSave';
@@ -21,10 +20,10 @@ export const ExperienceEdit: React.FC = () => {
   const draft = useExperienceDraft(id);
   const [title, setTitle] = useState(draft.data.title);
   const [description, setDescription] = useState(draft.data.description);
-  const [startDate, setStartDate] = useState(draft.data.startDate);
-  const [endDate, setEndDate] = useState(draft.data.endDate);
-  const [isCurrent, setIsCurrent] = useState(draft.data.isCurrent);
-  const [tags, setTags] = useState<string[]>(draft.data.tags);
+  const [startDate, setStartDate] = useState(draft.data.start_date);
+  const [endDate, setEndDate] = useState(draft.data.end_date || '');
+  const [isCurrent, setIsCurrent] = useState(draft.data.is_current || false);
+  const [tags, setTags] = useState<string[]>(draft.data.tags || []);
 
   useEffect(() => {
     initializeAuth();
@@ -33,15 +32,15 @@ export const ExperienceEdit: React.FC = () => {
 
   const prevDraftData = useRef(draft.data);
   useEffect(() => {
-    if (draft.hasDraft && !draft.isDirty && prevDraftData.current !== draft.data) {
+    if (draft.hasDraft && prevDraftData.current !== draft.data) {
       setShowDraftBanner(true);
       prevDraftData.current = draft.data;
     }
-  }, [draft.hasDraft, draft.isDirty, draft.data]);
+  }, [draft.hasDraft, draft.data]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      draft.save({ title, description, startDate, endDate, isCurrent, category, tags });
+      draft.save({ title, description, start_date: startDate, end_date: endDate || undefined, is_current: isCurrent, category, tags });
     }, 1000);
     return () => clearTimeout(timer);
   }, [title, description, startDate, endDate, isCurrent, category, tags]);
@@ -122,11 +121,11 @@ export const ExperienceEdit: React.FC = () => {
   const handleRestoreDraft = () => {
     setTitle(draft.data.title);
     setDescription(draft.data.description);
-    setStartDate(draft.data.startDate);
-    setEndDate(draft.data.endDate);
-    setIsCurrent(draft.data.isCurrent);
+    setStartDate(draft.data.start_date);
+    setEndDate(draft.data.end_date || '');
+    setIsCurrent(draft.data.is_current || false);
     setCategory(draft.data.category || 'project');
-    setTags(draft.data.tags);
+    setTags(draft.data.tags || []);
     setShowDraftBanner(false);
   };
 
@@ -167,7 +166,7 @@ export const ExperienceEdit: React.FC = () => {
             <div className="flex items-center">
               <span className="text-yellow-600 mr-2">📝</span>
               <span className="text-yellow-700">
-                发现未保存的草稿（{draft.lastSaved ? formatDateTime(draft.lastSaved.toISOString()) : ''}）
+                发现未保存的草稿
               </span>
             </div>
             <div className="flex space-x-2">

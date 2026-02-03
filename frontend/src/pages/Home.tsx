@@ -8,6 +8,11 @@ import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
 import { HotContent } from '../components/HotContent';
 import CommentModal from '../components/CommentModal';
+import { RecordCardSkeleton } from '../components/ui/Skeleton';
+import { EmptyPlaza, EmptySearch } from '../components/feedback/EmptyState';
+import { LoadingSpinner, LoadingDots } from '../components/feedback/LoadingState';
+import { StaggerContainer, StaggerItem, HoverCard } from '../components/animation/PageTransition';
+import { HtmlContent } from '../components/HtmlContent';
 import type { Record as UserRecord } from '../types/record';
 import type { Experience } from '../types/experience';
 import type { Collection } from '../types/collection';
@@ -204,7 +209,7 @@ export const Home: React.FC = () => {
   if (!authChecked) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-[var(--text-muted)]">加载中...</div>
+        <LoadingSpinner size="xl" />
       </div>
     );
   }
@@ -251,7 +256,12 @@ export const Home: React.FC = () => {
               disabled={loading || !query.trim()}
               className="btn-primary whitespace-nowrap disabled:opacity-50"
             >
-              {loading ? '搜索中...' : '搜索'}
+              {loading ? (
+              <span className="flex items-center gap-2">
+                <LoadingDots size="sm" />
+                搜索中
+              </span>
+            ) : '搜索'}
             </button>
           </div>
         </div>
@@ -263,12 +273,14 @@ export const Home: React.FC = () => {
           {/* Content Area */}
           <div className="flex-1">
             {searched ? (
-              <SearchResults 
-                results={results} 
+              <SearchResults
+                results={results}
                 isAuthenticated={isAuthenticated}
                 onRecordClick={handleRecordClick}
                 onExperienceClick={handleExperienceClick}
                 onCollectionClick={handleCollectionClick}
+                query={query}
+                onClearSearch={handleClearSearch}
               />
             ) : (
               <ContentList
@@ -319,10 +331,12 @@ interface SearchResultsProps {
   onRecordClick: (id: string) => void;
   onExperienceClick: (id: string) => void;
   onCollectionClick: (collection: Collection) => void;
+  query?: string;
+  onClearSearch?: () => void;
 }
 
-const SearchResults: React.FC<SearchResultsProps> = ({ 
-  results, isAuthenticated, onRecordClick, onExperienceClick, onCollectionClick 
+const SearchResults: React.FC<SearchResultsProps> = ({
+  results, isAuthenticated, onRecordClick, onExperienceClick, onCollectionClick, query, onClearSearch: handleClearSearch
 }) => (
   <div className="space-y-8">
     {results.records.length > 0 && (
@@ -341,7 +355,9 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <h3 className="font-medium text-[var(--text-primary)] mb-2">{record.title || '无标题'}</h3>
-                  <p className="text-[var(--text-secondary)] text-sm line-clamp-2">{record.content}</p>
+                  <div className="text-[var(--text-secondary)] text-sm line-clamp-2">
+                    <HtmlContent content={record.content} />
+                  </div>
                 </div>
                 {record.user && (
                   <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">{record.user.username}</span>
@@ -396,10 +412,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     )}
 
     {results.records.length === 0 && results.experiences.length === 0 && (results.collections.length === 0 || !isAuthenticated) && (
-      <div className="text-center py-16">
-        <div className="text-6xl mb-4 opacity-50">🍃</div>
-        <p className="text-[var(--text-muted)] text-lg">没有找到相关内容</p>
-      </div>
+      <EmptySearch query={query} onClear={handleClearSearch} />
     )}
   </div>
 );
@@ -424,48 +437,42 @@ interface ContentListProps {
 }
 
 const ContentList: React.FC<ContentListProps> = ({
-  loading, publicRecords, total, page, pageSize, jumpToPage, isAuthenticated,
+  loading, publicRecords, total, page, pageSize, jumpToPage,
   onRecordClick, onLike, onOpenComments, onPageChange, onPageSizeChange,
   onJumpToPage, onJumpToPageSubmit, onKeyPress
 }) => {
-  const navigate = useNavigate();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-12 w-12 border-2 border-[var(--accent-color)] border-t-transparent" />
-      </div>
+      <StaggerContainer className="space-y-6">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <StaggerItem key={index}>
+            <RecordCardSkeleton />
+          </StaggerItem>
+        ))}
+      </StaggerContainer>
     );
   }
 
   if (publicRecords.length === 0) {
     return (
-      <div className="card p-12 text-center">
-        <div className="text-6xl mb-4">✨</div>
-        <h3 className="heading-display text-xl text-[var(--text-primary)] mb-2">广场上还没有内容</h3>
-        <p className="text-[var(--text-muted)] mb-6">快来发布第一条今日美好吧！</p>
-        {isAuthenticated && (
-          <button onClick={() => navigate('/records')} className="btn-primary">
-            去发布今日美好
-          </button>
-        )}
-      </div>
+      <EmptyPlaza />
     );
   }
 
   return (
-    <div className="space-y-6">
-      {publicRecords.map((record, index) => {
+    <StaggerContainer className="space-y-6">
+      {publicRecords.map((record) => {
         const typeInfo = typeIcons[record.record_type] || typeIcons.note;
         return (
-          <article
-            key={record.id}
-            onClick={() => onRecordClick(record.id)}
-            className="card card-hover p-6 cursor-pointer animate-slide-up"
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4 mb-4">
+          <StaggerItem key={record.id}>
+            <HoverCard>
+              <article
+                onClick={() => onRecordClick(record.id)}
+                className="card card-hover p-6 cursor-pointer"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4 mb-4">
               <div className="flex-1">
                 <h2 className="heading-display text-xl md:text-2xl text-[var(--text-primary)] mb-2 hover:text-[var(--accent-color)] transition-colors">
                   {record.title || '无标题'}
@@ -488,9 +495,9 @@ const ContentList: React.FC<ContentListProps> = ({
             </div>
 
             {/* Content */}
-            <p className="text-[var(--text-secondary)] line-clamp-3 mb-4 leading-relaxed">
-              {record.content}
-            </p>
+            <div className="text-[var(--text-secondary)] line-clamp-3 mb-4 leading-relaxed">
+              <HtmlContent content={record.content} />
+            </div>
 
             {/* Images */}
             {record.image_urls && record.image_urls.length > 0 && (
@@ -541,8 +548,10 @@ const ContentList: React.FC<ContentListProps> = ({
                   ))}
                 </div>
               )}
-            </div>
-          </article>
+                </div>
+              </article>
+            </HoverCard>
+          </StaggerItem>
         );
       })}
 
@@ -605,6 +614,6 @@ const ContentList: React.FC<ContentListProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </StaggerContainer>
   );
 };

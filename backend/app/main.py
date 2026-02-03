@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from app.config import settings
-from app.api import auth, records, experiences, collections, tags, likes, comments, admin, follows, upload, analytics, notifications
+from app.api import auth, records, experiences, collections, tags, likes, comments, admin, follows, upload, analytics, notifications, users, websocket
 from fastapi.exceptions import RequestValidationError
 import logging
 import os
@@ -32,6 +32,8 @@ app.include_router(follows.router)
 app.include_router(upload.router)
 app.include_router(analytics.router)
 app.include_router(notifications.router)
+app.include_router(users.router)
+app.include_router(websocket.router)
 
 # 挂载静态文件服务（上传的文件）
 if os.path.exists(settings.UPLOAD_DIR):

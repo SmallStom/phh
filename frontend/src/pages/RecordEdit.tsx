@@ -10,25 +10,27 @@ import { useRecordDraft } from '../hooks/useDraftSave';
 export const RecordEdit: React.FC = () => {
   const { isAuthenticated, initializeAuth } = useAuthStore();
   const navigate = useNavigate();
-  const [recordType, setRecordType] = useState<'note' | 'idea' | 'log'>('note');
   const [loading, setLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   const draft = useRecordDraft();
-  const [title, setTitle] = useState(draft.data.title);
-  const [content, setContent] = useState(draft.data.content);
-  const [tags, setTags] = useState<string[]>(draft.data.tags);
+  
+  // 从 draft 初始化状态（只执行一次）
+  const [recordType, setRecordType] = useState<'note' | 'idea' | 'log'>(
+    draft.data.recordType || 'note'
+  );
+  const [title, setTitle] = useState(draft.data.title || '');
+  const [content, setContent] = useState(draft.data.content || '');
+  const [tags, setTags] = useState<string[]>(draft.data.tags || []);
 
   useEffect(() => {
     initializeAuth();
     setAuthChecked(true);
   }, []);
 
+  // 自动保存草稿 - 直接在内容变化时调用 save（内部有防抖）
   useEffect(() => {
-    const timer = setTimeout(() => {
-      draft.save({ title, content, tags, recordType });
-    }, 1000);
-    return () => clearTimeout(timer);
+    draft.save({ title, content, tags, recordType });
   }, [title, content, tags, recordType]);
 
   const handleSubmit = async (e: React.FormEvent, publish: boolean = false) => {

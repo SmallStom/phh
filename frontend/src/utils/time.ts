@@ -11,14 +11,20 @@
 const BEIJING_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 /**
- * 检测时间是否可能是 UTC 时间
- * 如果时间比当前时间晚超过 8 小时，可能是 UTC 时间被误解析为本地时间
+ * 检测时间是否可能是 UTC 时间被误解析为本地时间
+ * 如果解析后的时间比当前时间早约 8 小时，说明可能是 UTC 时间
+ * 
+ * 原理：
+ * - 后端返回 UTC 时间：2026-02-03T04:00:00Z
+ * - 浏览器解析为本地时间：2026-02-03 04:00:00（当成北京时间）
+ * - 实际北京时间应该是：2026-02-03 12:00:00
+ * - 所以解析后的时间比实际时间早 8 小时
  */
 const isProbablyUTCTime = (date: Date): boolean => {
   const now = new Date();
-  const diff = date.getTime() - now.getTime();
-  // 如果时间在未来 7 小时以上，可能是 UTC 时间
-  return diff > 7 * 60 * 60 * 1000;
+  const diff = now.getTime() - date.getTime();
+  // 如果时间在 7-9 小时前，可能是 UTC 时间被误解析
+  return diff > 7 * 60 * 60 * 1000 && diff < 9 * 60 * 60 * 1000;
 };
 
 /**
@@ -33,13 +39,13 @@ const parseTime = (time: string | Date): Date => {
 
 /**
  * 将时间转换为北京时间
- * 智能处理：如果检测到是 UTC 时间，则加 8 小时
+ * 智能处理：如果检测到是 UTC 时间被误解析，则加 8 小时
  */
 const toBeijingTime = (date: Date): Date => {
-  // 如果时间是 UTC（比当前时间晚很多），需要转换
+  // 如果时间是 UTC 被误解析为本地时间（比实际时间早 8 小时）
   if (isProbablyUTCTime(date)) {
-    // 减去 8 小时（因为浏览器把 UTC 时间当成了本地时间）
-    return new Date(date.getTime() - BEIJING_OFFSET_MS);
+    // 加上 8 小时，得到正确的北京时间
+    return new Date(date.getTime() + BEIJING_OFFSET_MS);
   }
   // 否则假设已经是北京时间
   return date;

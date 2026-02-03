@@ -20,6 +20,12 @@ class User(BaseModel):
     password_hash = Column(String(255), nullable=False)
     role = Column(SQLEnum(UserRole, values_callable=lambda x: [e.value for e in x]), default=UserRole.USER)
     
+    # 个人资料字段
+    avatar = Column(String(500), nullable=True)
+    bio = Column(String(500), nullable=True)
+    location = Column(String(100), nullable=True)
+    website = Column(String(200), nullable=True)
+    
     tenant = relationship("Tenant", back_populates="users")
     records = relationship("Record", back_populates="user")
     experiences = relationship("Experience", back_populates="user")

@@ -1,10 +1,23 @@
 from sqlalchemy.orm import Session
 from typing import Optional
-from app.models.notification import Notification, NotificationType
-from app.models.user import User
+import asyncio
 import logging
 
+from app.models.notification import Notification, NotificationType
+from app.models.user import User
+
 logger = logging.getLogger(__name__)
+
+# 延迟导入，避免循环依赖
+manager = None
+
+def get_websocket_manager():
+    """获取WebSocket管理器（延迟导入）"""
+    global manager
+    if manager is None:
+        from app.core.websocket import manager as ws_manager
+        manager = ws_manager
+    return manager
 
 
 class NotificationService:
@@ -35,7 +48,87 @@ class NotificationService:
         db.commit()
         db.refresh(notification)
         logger.info(f"Notification created: {type} for user {recipient_id}")
+        
+        # 通过WebSocket推送实时通知
+        asyncio.create_task(
+            NotificationService._push_notification(notification)
+        )
+        
         return notification
+    
+    @staticmethod
+    async def _push_notification(notification: Notification):
+        """
+        通过WebSocket推送通知给接收者
+        
+        Args:
+            notification: 通知对象
+        """
+        try:
+            ws_manager = get_websocket_manager()
+            
+            # 检查用户是否在线
+            if not ws_manager.is_user_online(str(notification.recipient_id)):
+                return
+            
+            # 构建通知消息
+            message = {
+                "type": "notification",
+                "data": {
+                    "id": str(notification.id),
+                    "type": notification.type.value,
+                    "title": notification.title,
+                    "content": notification.content,
+                    "is_read": notification.is_read,
+                    "created_at": notification.created_at.isoformat(),
+                    "sender_id": str(notification.sender_id) if notification.sender_id else None,
+                    "resource_type": notification.resource_type,
+                    "resource_id": str(notification.resource_id) if notification.resource_id else None,
+                }
+            }
+            
+            # 发送通知
+            await ws_manager.send_personal_message(
+                str(notification.recipient_id),
+                message
+            )
+            
+            # 同时更新未读数
+            await NotificationService._push_unread_count(str(notification.recipient_id))
+            
+        except RuntimeError:
+            # 连接已断开，忽略错误
+            pass
+        except Exception as e:
+            logger.error(f"Failed to push notification: {e}")
+    
+    @staticmethod
+    async def _push_unread_count(user_id: str):
+        """
+        推送未读通知数量更新
+        
+        Args:
+            user_id: 用户ID
+        """
+        try:
+            ws_manager = get_websocket_manager()
+            
+            # 检查用户是否在线
+            if not ws_manager.is_user_online(user_id):
+                return
+            
+            # 获取未读数（这里简化处理，实际应该从数据库查询）
+            # 由于异步上下文没有db session，这里只发送刷新指令
+            await ws_manager.send_personal_message(
+                user_id,
+                {"type": "refresh_unread_count"}
+            )
+            
+        except RuntimeError:
+            # 连接已断开，忽略错误
+            pass
+        except Exception as e:
+            logger.error(f"Failed to push unread count: {e}")
     
     @staticmethod
     def notify_like(

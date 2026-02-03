@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { recordsApi } from '../api/records';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
+import { HtmlContent } from '../components/HtmlContent';
 import type { Record as UserRecord } from '../types/record';
 
 const typeIcons: Record<string, { icon: string; label: string; color: string }> = {
@@ -259,9 +260,9 @@ export const RecordsList: React.FC = () => {
                     </span>
                   </div>
                   
-                  <p className="text-[var(--text-secondary)] line-clamp-2 mb-4 leading-relaxed text-sm">
-                    {record.content}
-                  </p>
+                  <div className="text-[var(--text-secondary)] line-clamp-2 mb-4 leading-relaxed text-sm">
+                    <HtmlContent content={record.content} />
+                  </div>
                   
                   <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${typeInfo.color}`}>

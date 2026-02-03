@@ -68,25 +68,55 @@ async def get_records(
     status_filter: Optional[RecordStatus] = Query(None, alias="status"),
     type_filter: Optional[RecordType] = Query(None, alias="type"),
     search: Optional[str] = None,
+    date_from: Optional[datetime] = Query(None, alias="date_from"),
+    date_to: Optional[datetime] = Query(None, alias="date_to"),
+    sort_by: str = Query("newest", alias="sort"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """获取记录列表，支持高级筛选
+    
+    Args:
+        sort_by: 排序方式，可选值：newest(最新), oldest(最早), popular(热门)
+    """
     query = db.query(Record).filter(Record.tenant_id == current_user.tenant_id)
     
+    # 状态筛选
     if status_filter:
         query = query.filter(Record.status == status_filter)
     
+    # 类型筛选
     if type_filter:
         query = query.filter(Record.record_type == type_filter)
     
+    # 搜索关键词
     if search:
         query = query.filter(
             (Record.title.ilike(f"%{search}%")) | 
             (Record.content.ilike(f"%{search}%"))
         )
     
+    # 日期范围筛选
+    if date_from:
+        query = query.filter(Record.created_at >= date_from)
+    if date_to:
+        query = query.filter(Record.created_at <= date_to)
+    
+    # 排序
+    if sort_by == "newest":
+        query = query.order_by(Record.created_at.desc())
+    elif sort_by == "oldest":
+        query = query.order_by(Record.created_at.asc())
+    elif sort_by == "popular":
+        # 按点赞数+评论数排序
+        query = query.outerjoin(Like).group_by(Record.id).order_by(
+            (func.count(Like.id) + Record.comment_count).desc()
+        )
+    else:
+        query = query.order_by(Record.created_at.desc())
+    
     total = query.count()
-    records = query.order_by(Record.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    records = query.offset((page - 1) * page_size).limit(page_size).all()
     
     return RecordListResponse(
         data=[RecordResponse.model_validate(record) for record in records],

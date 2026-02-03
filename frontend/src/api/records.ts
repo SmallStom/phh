@@ -22,6 +22,9 @@ export const recordsApi = {
     status?: string;
     type?: string;
     search?: string;
+    date_from?: string;
+    date_to?: string;
+    sort?: 'newest' | 'oldest' | 'popular';
   }): Promise<RecordListResponse> {
     const response = await api.get<RecordListResponse>('/records', { params });
     return response.data;

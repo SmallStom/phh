@@ -6,6 +6,7 @@ import { likesApi } from '../api/likes';
 import { commentsApi } from '../api/comments';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
+import { HtmlContent } from '../components/HtmlContent';
 import type { Record as UserRecord, RecordUpdate } from '../types/record';
 import type { Comment } from '../types/comment';
 
@@ -441,10 +442,8 @@ export const RecordDetail: React.FC = () => {
               </h1>
               
               {/* 内容 */}
-              <div className="prose prose-lg max-w-none">
-                <p className="text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">
-                  {record.content}
-                </p>
+              <div className="html-content">
+                <HtmlContent content={record.content} />
               </div>
               
               {/* 图片展示 */}

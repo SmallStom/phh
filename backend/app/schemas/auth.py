@@ -38,6 +38,10 @@ class UserResponse(UserBase):
     id: str
     role: UserRole
     created_at: datetime
+    avatar: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
     
     @field_serializer('created_at')
     @classmethod
@@ -53,6 +57,23 @@ class UserResponse(UserBase):
     
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+
+
+class UserProfileResponse(UserResponse):
+    followers_count: int = 0
+    following_count: int = 0
+    records_count: int = 0
+    experiences_count: int = 0
+    collections_count: int = 0
+    likes_received: int = 0
+    comments_received: int = 0
 
 
 class Token(BaseModel):

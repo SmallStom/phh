@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -40,6 +40,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     },
   });
 
+  // 使用 useEffect 来同步外部 content 变化，但避免在编辑器有焦点时重置
+  useEffect(() => {
+    if (editor && !editor.isDestroyed && !editor.isFocused) {
+      const currentContent = editor.getHTML();
+      if (currentContent !== content) {
+        editor.commands.setContent(content, false);
+      }
+    }
+  }, [content, editor]);
+
   const handleImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !editor) return;
@@ -70,16 +80,18 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }
 
   return (
-    <div className={`border rounded-lg overflow-hidden ${className}`}>
+    <div className={`border border-[var(--border-color)] rounded-lg overflow-hidden bg-[var(--bg-card)] ${className}`}>
       {/* 工具栏 */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-gray-50 dark:bg-gray-800">
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
         {/* 文本样式 */}
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('bold') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('bold') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="粗体"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,10 +99,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </svg>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('italic') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('italic') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="斜体"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,10 +112,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </svg>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('strike') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('strike') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="删除线"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,48 +126,56 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </button>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+        <div className="w-px h-6 bg-[var(--border-color)]" />
 
         {/* 标题 */}
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('heading', { level: 1 }) ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('heading', { level: 1 }) ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="标题1"
           >
             <span className="font-bold text-sm">H1</span>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('heading', { level: 2 }) ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('heading', { level: 2 }) ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="标题2"
           >
             <span className="font-bold text-sm">H2</span>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('heading', { level: 3 }) ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('heading', { level: 3 }) ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="标题3"
           >
             <span className="font-bold text-sm">H3</span>
           </button>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+        <div className="w-px h-6 bg-[var(--border-color)]" />
 
         {/* 列表 */}
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('bulletList') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('bulletList') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="无序列表"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,10 +183,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </svg>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('orderedList') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('orderedList') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="有序列表"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,15 +197,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </button>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+        <div className="w-px h-6 bg-[var(--border-color)]" />
 
         {/* 引用和代码 */}
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('blockquote') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('blockquote') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="引用"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,10 +215,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </svg>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('codeBlock') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('codeBlock') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="代码块"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,22 +229,24 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </button>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+        <div className="w-px h-6 bg-[var(--border-color)]" />
 
         {/* 链接和图片 */}
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={addLink}
-            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
-              editor.isActive('link') ? 'bg-gray-200 dark:bg-gray-700' : ''
+            className={`p-2 rounded hover:bg-[var(--border-color)] transition-colors ${
+              editor.isActive('link') ? 'bg-[var(--border-color)]' : ''
             }`}
+            style={{ color: 'var(--text-primary)' }}
             title="插入链接"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
           </button>
-          <label className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" title="上传图片">
+          <label className="p-2 rounded hover:bg-[var(--border-color)] cursor-pointer transition-colors" style={{ color: 'var(--text-primary)' }} title="上传图片">
             <input
               type="file"
               accept="image/*"
@@ -227,14 +259,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </label>
         </div>
 
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+        <div className="w-px h-6 bg-[var(--border-color)]" />
 
         {/* 撤销/重做 */}
         <div className="flex items-center gap-1">
           <button
+            type="button"
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded hover:bg-[var(--border-color)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{ color: 'var(--text-primary)' }}
             title="撤销"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,9 +276,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </svg>
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
-            className="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 rounded hover:bg-[var(--border-color)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{ color: 'var(--text-primary)' }}
             title="重做"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,28 +293,49 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {/* 编辑器内容 */}
       <EditorContent
         editor={editor}
-        className="prose dark:prose-invert max-w-none p-4 min-h-[200px] focus:outline-none"
+        className="prose dark:prose-invert max-w-none focus:outline-none bg-[var(--bg-card)]"
       />
 
       {/* 浮动菜单 */}
       {editor && (
         <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <div className="flex items-center gap-1 p-1 bg-white dark:bg-gray-800 rounded shadow-lg border">
+          <div 
+            className="flex items-center gap-1 p-1 rounded shadow-lg border"
+            style={{ 
+              backgroundColor: 'var(--bg-card)',
+              borderColor: 'var(--border-color)'
+            }}
+          >
             <button
+              type="button"
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`p-1 rounded ${editor.isActive('bold') ? 'bg-gray-200 dark:bg-gray-700' : ''}`}
+              className={`p-1 rounded transition-colors ${editor.isActive('bold') ? '' : ''}`}
+              style={{
+                backgroundColor: editor.isActive('bold') ? 'var(--border-color)' : 'transparent',
+                color: 'var(--text-primary)'
+              }}
             >
               <span className="font-bold text-xs">B</span>
             </button>
             <button
+              type="button"
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`p-1 rounded ${editor.isActive('italic') ? 'bg-gray-200 dark:bg-gray-700' : ''}`}
+              className={`p-1 rounded transition-colors ${editor.isActive('italic') ? '' : ''}`}
+              style={{
+                backgroundColor: editor.isActive('italic') ? 'var(--border-color)' : 'transparent',
+                color: 'var(--text-primary)'
+              }}
             >
               <span className="italic text-xs">I</span>
             </button>
             <button
+              type="button"
               onClick={() => editor.chain().focus().unsetLink().run()}
-              className={`p-1 rounded ${editor.isActive('link') ? 'bg-gray-200 dark:bg-gray-700' : ''}`}
+              className={`p-1 rounded transition-colors ${editor.isActive('link') ? '' : ''}`}
+              style={{
+                backgroundColor: editor.isActive('link') ? 'var(--border-color)' : 'transparent',
+                color: 'var(--text-primary)'
+              }}
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

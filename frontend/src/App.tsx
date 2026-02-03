@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { Layout } from './components/layout/Layout';
 import { Home } from './pages/Home';
 import { RecordsList } from './pages/RecordsList';
@@ -13,6 +14,111 @@ import { CollectionDetail } from './pages/CollectionDetail';
 import { Search } from './pages/Search';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { Profile } from './pages/Profile';
+import { PageTransition } from './components/animation/PageTransition';
+import { KeyboardShortcuts } from './components/keyboard/KeyboardShortcuts';
+
+// 包装路由组件以支持动画
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        <Route path="/" element={<Layout />}>
+          <Route index element={
+            <PageTransition>
+              <Home />
+            </PageTransition>
+          } />
+
+          <Route path="records" element={
+            <PageTransition>
+              <RecordsList />
+            </PageTransition>
+          } />
+          <Route path="records/new" element={
+            <PageTransition>
+              <RecordEdit />
+            </PageTransition>
+          } />
+          <Route path="records/:id" element={
+            <PageTransition>
+              <RecordDetail />
+            </PageTransition>
+          } />
+          <Route path="records/:id/edit" element={
+            <PageTransition>
+              <RecordEdit />
+            </PageTransition>
+          } />
+
+          <Route path="experiences" element={
+            <PageTransition>
+              <TimelineView />
+            </PageTransition>
+          } />
+          <Route path="experiences/new" element={
+            <PageTransition>
+              <ExperienceEdit />
+            </PageTransition>
+          } />
+          <Route path="experiences/:id" element={
+            <PageTransition>
+              <ExperienceDetail />
+            </PageTransition>
+          } />
+          <Route path="experiences/:id/edit" element={
+            <PageTransition>
+              <ExperienceEdit />
+            </PageTransition>
+          } />
+
+          <Route path="collections" element={
+            <PageTransition>
+              <CollectionsGrid />
+            </PageTransition>
+          } />
+          <Route path="collections/new" element={
+            <PageTransition>
+              <CollectionEdit />
+            </PageTransition>
+          } />
+          <Route path="collections/:id" element={
+            <PageTransition>
+              <CollectionDetail />
+            </PageTransition>
+          } />
+          <Route path="collections/record/:recordId" element={
+            <PageTransition>
+              <CollectionEdit />
+            </PageTransition>
+          } />
+          <Route path="collections/experience/:experienceId" element={
+            <PageTransition>
+              <CollectionEdit />
+            </PageTransition>
+          } />
+
+          <Route path="search" element={
+            <PageTransition>
+              <Search />
+            </PageTransition>
+          } />
+          <Route path="profile" element={
+            <PageTransition>
+              <Profile />
+            </PageTransition>
+          } />
+        </Route>
+      </Routes>
+      <KeyboardShortcuts />
+    </AnimatePresence>
+  );
+}
 
 function App() {
   return (
@@ -22,32 +128,7 @@ function App() {
         v7_relativeSplatPath: true,
       }}
     >
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          
-          <Route path="records" element={<RecordsList />} />
-          <Route path="records/new" element={<RecordEdit />} />
-          <Route path="records/:id" element={<RecordDetail />} />
-          <Route path="records/:id/edit" element={<RecordEdit />} />
-          
-          <Route path="experiences" element={<TimelineView />} />
-          <Route path="experiences/new" element={<ExperienceEdit />} />
-          <Route path="experiences/:id" element={<ExperienceDetail />} />
-          <Route path="experiences/:id/edit" element={<ExperienceEdit />} />
-          
-          <Route path="collections" element={<CollectionsGrid />} />
-          <Route path="collections/new" element={<CollectionEdit />} />
-          <Route path="collections/:id" element={<CollectionDetail />} />
-          <Route path="collections/record/:recordId" element={<CollectionEdit />} />
-          <Route path="collections/experience/:experienceId" element={<CollectionEdit />} />
-          
-          <Route path="search" element={<Search />} />
-        </Route>
-      </Routes>
+      <AnimatedRoutes />
     </BrowserRouter>
   );
 }
