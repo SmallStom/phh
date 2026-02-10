@@ -5,6 +5,7 @@ import logging
 
 from app.models.notification import Notification, NotificationType
 from app.models.user import User
+from app.models.notification_settings import NotificationSettings
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,44 @@ class NotificationService:
     """站内通知服务"""
     
     @staticmethod
+    def _check_notification_enabled(
+        db: Session,
+        user_id: str,
+        notification_type: NotificationType
+    ) -> bool:
+        """
+        检查用户是否启用了特定类型的通知
+        
+        Args:
+            db: 数据库会话
+            user_id: 用户ID
+            notification_type: 通知类型
+            
+        Returns:
+            bool: 是否启用通知
+        """
+        settings = db.query(NotificationSettings).filter(
+            NotificationSettings.user_id == user_id
+        ).first()
+        
+        if not settings:
+            return True  # 默认启用
+        
+        # 根据通知类型检查对应的设置
+        if notification_type == NotificationType.LIKE:
+            return settings.like_enabled
+        elif notification_type == NotificationType.COMMENT:
+            return settings.comment_enabled
+        elif notification_type == NotificationType.FOLLOW:
+            return settings.follow_enabled
+        elif notification_type == NotificationType.MENTION:
+            return settings.mention_enabled
+        elif notification_type == NotificationType.COLLECT:
+            return True  # 收藏通知暂时没有开关
+        else:
+            return True  # 其他类型默认启用
+    
+    @staticmethod
     def create_notification(
         db: Session,
         recipient_id: str,
@@ -32,7 +71,8 @@ class NotificationService:
         content: Optional[str] = None,
         sender_id: Optional[str] = None,
         resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None
+        resource_id: Optional[str] = None,
+        comment_id: Optional[str] = None
     ) -> Notification:
         """创建通知"""
         notification = Notification(
@@ -42,7 +82,8 @@ class NotificationService:
             title=title,
             content=content,
             resource_type=resource_type,
-            resource_id=resource_id
+            resource_id=resource_id,
+            comment_id=comment_id
         )
         db.add(notification)
         db.commit()
@@ -145,6 +186,10 @@ class NotificationService:
         if recipient_id == sender_id:
             return None
         
+        # 检查用户是否启用了点赞通知
+        if not NotificationService._check_notification_enabled(db, recipient_id, NotificationType.LIKE):
+            return None
+        
         title = f"{sender_name} 点赞了你的{content_type}"
         content = f"《{content_title}》"
         
@@ -175,8 +220,43 @@ class NotificationService:
         if recipient_id == sender_id:
             return None
         
+        # 检查用户是否启用了评论通知
+        if not NotificationService._check_notification_enabled(db, recipient_id, NotificationType.COMMENT):
+            return None
+        
         title = f"{sender_name} 评论了你的{content_type}"
         content = f"《{content_title}》：{comment_content[:100]}{'...' if len(comment_content) > 100 else ''}"
+        
+        return NotificationService.create_notification(
+            db=db,
+            recipient_id=recipient_id,
+            type=NotificationType.COMMENT,
+            title=title,
+            content=content,
+            sender_id=sender_id,
+            resource_type=content_type,
+            resource_id=content_id
+        )
+    
+    @staticmethod
+    def notify_comment_reply(
+        db: Session,
+        recipient_id: str,
+        sender_id: str,
+        sender_name: str,
+        content_type: str,
+        content_title: str,
+        comment_content: str,
+        content_id: str,
+        parent_comment_id: Optional[str] = None
+    ) -> Optional[Notification]:
+        """发送评论回复通知"""
+        # 不给自己发通知
+        if recipient_id == sender_id:
+            return None
+        
+        title = f"{sender_name} 回复了你的评论"
+        content = f"在《{content_title}》中：{comment_content[:100]}{'...' if len(comment_content) > 100 else ''}"
         
         return NotificationService.create_notification(
             db=db,
@@ -199,6 +279,10 @@ class NotificationService:
         """发送关注通知"""
         # 不给自己发通知
         if recipient_id == sender_id:
+            return None
+        
+        # 检查用户是否启用了关注通知
+        if not NotificationService._check_notification_enabled(db, recipient_id, NotificationType.FOLLOW):
             return None
         
         title = f"{sender_name} 关注了你"

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, X, Check, RotateCw } from 'lucide-react';
 
@@ -24,10 +24,17 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatar || null);
+  const [imageError, setImageError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 当 currentAvatar 变化时更新 previewUrl
+  useEffect(() => {
+    setPreviewUrl(currentAvatar || null);
+    setImageError(false);
+  }, [currentAvatar]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -83,6 +90,8 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     try {
       await onUpload(selectedFile);
       setShowCropper(false);
+      setSelectedFile(null);
+      // 注意：previewUrl 会通过 useEffect 从 currentAvatar 更新
     } catch (error) {
       console.error('Upload failed:', error);
       alert('上传失败，请重试');
@@ -115,11 +124,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {previewUrl ? (
+        {previewUrl && !imageError ? (
           <img
             src={previewUrl}
-            alt="Avatar"
+            alt=""
             className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
           />
         ) : (
           <span>{getInitials()}</span>
@@ -207,7 +217,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={handleCancel}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   取消
                 </button>
@@ -215,7 +225,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
                   onClick={handleUpload}
                   disabled={isUploading}
                   className="flex-1 px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 
-                           disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                           disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-medium"
                 >
                   {isUploading ? (
                     <>

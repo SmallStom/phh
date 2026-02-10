@@ -96,8 +96,12 @@ export const Header: React.FC = () => {
                   {/* User Menu */}
                   <div className="relative group">
                     <button className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-[var(--bg-secondary)] transition-colors duration-200">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-sm font-medium">
-                        {user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-sm font-medium overflow-hidden">
+                        {user?.avatar ? (
+                          <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                        ) : (
+                          user?.username?.charAt(0)?.toUpperCase() || 'U'
+                        )}
                       </div>
                       <span className="text-sm font-medium text-[var(--text-primary)] hidden sm:inline">
                         {user?.username}

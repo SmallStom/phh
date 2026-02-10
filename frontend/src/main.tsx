@@ -3,9 +3,13 @@ import { Toaster } from 'react-hot-toast'
 import App from './App.tsx'
 import './index.css'
 import { initTheme } from './store/themeStore'
+import { useAuthStore } from './store/authStore'
 
 // 初始化主题
 initTheme()
+
+// 初始化认证状态
+useAuthStore.getState().initializeAuth()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <>

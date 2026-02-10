@@ -11,6 +11,7 @@ class NotificationType(str, enum.Enum):
     COMMENT = "comment"     # 评论
     FOLLOW = "follow"       # 关注
     COLLECT = "collect"     # 收藏
+    MENTION = "mention"     # 提及
     SYSTEM = "system"       # 系统通知
 
 
@@ -33,6 +34,9 @@ class Notification(BaseModel):
     # 相关资源（可选）
     resource_type = Column(String(50))  # record, experience, collection, user
     resource_id = Column(UUID(as_uuid=True))
+    
+    # 评论ID（用于提及通知跳转到具体评论）
+    comment_id = Column(UUID(as_uuid=True), nullable=True)
     
     # 是否已读
     is_read = Column(Boolean, default=False, index=True)

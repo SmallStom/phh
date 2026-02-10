@@ -19,6 +19,8 @@ class UserInfo(BaseModel):
 
 class CommentCreate(BaseModel):
     content: str
+    parent_id: Optional[str] = None  # 回复哪条评论
+    reply_to_user_id: Optional[str] = None  # 回复给哪个用户
 
 
 class CommentResponse(BaseModel):
@@ -28,6 +30,12 @@ class CommentResponse(BaseModel):
     user_id: str
     user: Optional[UserInfo] = None
     content: str
+    parent_id: Optional[str] = None
+    reply_to_user_id: Optional[str] = None
+    reply_to_user: Optional[UserInfo] = None  # 回复给哪个用户
+    replies: List['CommentResponse'] = []  # 嵌套回复
+    reply_count: int = 0  # 回复数量
+    is_deleted: bool = False
     created_at: datetime
     updated_at: Optional[datetime] = None
     
@@ -40,13 +48,17 @@ class CommentResponse(BaseModel):
             dt = dt.astimezone(timezone.utc)
         return dt.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
     
-    @field_validator('id', 'tenant_id', 'record_id', 'user_id', mode='before')
+    @field_validator('id', 'tenant_id', 'record_id', 'user_id', 'parent_id', 'reply_to_user_id', mode='before')
     @classmethod
     def convert_uuid_to_str(cls, v):
         return str(v) if v is not None else v
     
     class Config:
         from_attributes = True
+
+
+# 解决循环引用
+CommentResponse.model_rebuild()
 
 
 class CommentListResponse(BaseModel):

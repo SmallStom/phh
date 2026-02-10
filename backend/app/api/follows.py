@@ -74,7 +74,7 @@ async def follow_user(
     except Exception as e:
         logger.error(f"Failed to create follow notification: {e}")
     
-    return follow
+    return FollowResponse.model_validate(follow)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

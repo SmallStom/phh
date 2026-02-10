@@ -1,59 +1,31 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Minus, LucideIcon } from 'lucide-react';
-
-interface Stat {
-  label: string;
-  value: string;
-  trend: 'up' | 'down' | 'neutral';
-}
+import { LucideIcon } from 'lucide-react';
 
 interface StatsCardProps {
-  title: string;
   icon: LucideIcon;
-  stats: Stat[];
+  label: string;
+  value: number;
+  onClick?: () => void;
 }
 
-const trendIcons = {
-  up: TrendingUp,
-  down: TrendingDown,
-  neutral: Minus,
-};
-
-const trendColors = {
-  up: 'text-green-500',
-  down: 'text-red-500',
-  neutral: 'text-gray-400',
-};
-
-export const StatsCard: React.FC<StatsCardProps> = ({ title, icon: Icon, stats }) => {
+export const StatsCard: React.FC<StatsCardProps> = ({ 
+  icon: Icon, 
+  label, 
+  value, 
+  onClick 
+}) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-2xl shadow-sm p-6"
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-terracotta-100 rounded-lg">
-          <Icon className="w-5 h-5 text-terracotta-600" />
-        </div>
-        <h3 className="font-semibold text-gray-900">{title}</h3>
-      </div>
-
-      <div className="space-y-4">
-        {stats.map((stat, index) => {
-          const TrendIcon = trendIcons[stat.trend];
-          return (
-            <div key={index} className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">{stat.label}</span>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900">{stat.value}</span>
-                <TrendIcon className={`w-4 h-4 ${trendColors[stat.trend]}`} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </motion.div>
+      <Icon className="w-6 h-6 text-terracotta-500 mb-2" />
+      <span className="text-2xl font-bold text-gray-900 dark:text-white">
+        {value}
+      </span>
+      <span className="text-sm text-gray-500 dark:text-gray-400">
+        {label}
+      </span>
+    </button>
   );
 };

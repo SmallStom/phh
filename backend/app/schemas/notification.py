@@ -9,6 +9,7 @@ class NotificationType(str, Enum):
     COMMENT = "comment"
     FOLLOW = "follow"
     COLLECT = "collect"
+    MENTION = "mention"
     SYSTEM = "system"
 
 
@@ -34,6 +35,7 @@ class NotificationResponse(BaseModel):
     content: Optional[str] = None
     resource_type: Optional[str] = None
     resource_id: Optional[str] = None
+    comment_id: Optional[str] = None
     is_read: bool
     created_at: datetime
     
@@ -52,6 +54,7 @@ class NotificationResponse(BaseModel):
             "content": obj.content,
             "resource_type": obj.resource_type,
             "resource_id": str(obj.resource_id) if obj.resource_id else None,
+            "comment_id": str(obj.comment_id) if obj.comment_id else None,
             "is_read": obj.is_read,
             "created_at": obj.created_at,
         }

@@ -10,6 +10,9 @@ from app.models.like import Like
 from app.models.comment import Comment
 from app.models.follow import Follow
 from app.models.notification import Notification, NotificationType
+from app.models.notification_settings import NotificationSettings
+from app.models.mention import Mention
+from app.models.share import Share
 from app.core.database import Base
 
 __all__ = [
@@ -32,4 +35,7 @@ __all__ = [
     "Follow",
     "Notification",
     "NotificationType",
+    "NotificationSettings",
+    "Mention",
+    "Share",
 ]

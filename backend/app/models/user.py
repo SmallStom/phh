@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, String, ForeignKey, Enum as SQLEnum, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import enum
@@ -14,9 +14,14 @@ class UserRole(str, enum.Enum):
 class User(BaseModel):
     __tablename__ = "users"
     
+    # 复合唯一约束：租户内用户名唯一
+    __table_args__ = (
+        UniqueConstraint('tenant_id', 'username', name='uix_tenant_username'),
+    )
+    
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False, index=True)
-    username = Column(String(50), nullable=False)
-    email = Column(String(100), nullable=False)
+    username = Column(String(50), nullable=False, index=True)
+    email = Column(String(100), nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(SQLEnum(UserRole, values_callable=lambda x: [e.value for e in x]), default=UserRole.USER)
     
@@ -31,7 +36,7 @@ class User(BaseModel):
     experiences = relationship("Experience", back_populates="user")
     collections = relationship("Collection", back_populates="user")
     likes = relationship("Like", back_populates="user", cascade="all, delete-orphan")
-    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("Comment", back_populates="user", foreign_keys="Comment.user_id", cascade="all, delete-orphan")
     
     # 关注关系
     following = relationship(
@@ -63,6 +68,13 @@ class User(BaseModel):
         cascade="all, delete-orphan",
         order_by="desc(Notification.created_at)"
     )
+    notification_settings = relationship(
+        "NotificationSettings",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+    shares = relationship("Share", back_populates="user", cascade="all, delete-orphan")
     
     @property
     def unread_notification_count(self) -> int:

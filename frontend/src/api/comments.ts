@@ -10,8 +10,20 @@ export const commentsApi = {
   async getComments(recordId: string, params?: {
     page?: number;
     page_size?: number;
+    parent_id?: string;
   }): Promise<CommentListResponse> {
     const response = await api.get<CommentListResponse>(`/records/${recordId}/comments`, { params });
+    return response.data;
+  },
+
+  async getCommentReplies(recordId: string, commentId: string, params?: {
+    page?: number;
+    page_size?: number;
+  }): Promise<CommentListResponse> {
+    const response = await api.get<CommentListResponse>(
+      `/records/${recordId}/comments/${commentId}/replies`,
+      { params }
+    );
     return response.data;
   },
 

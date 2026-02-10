@@ -123,7 +123,12 @@ async def upload_avatar(
         db.commit()
         db.refresh(current_user)
         
-        return UserResponse.model_validate(current_user)
+        logger.info(f"Avatar updated for user {current_user.id}: {result['url']}")
+        
+        response_data = UserResponse.model_validate(current_user)
+        logger.info(f"Returning user response with avatar: {response_data.avatar}")
+        
+        return response_data
     except HTTPException:
         raise
     except Exception as e:

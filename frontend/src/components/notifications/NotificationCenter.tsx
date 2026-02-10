@@ -27,6 +27,7 @@ export interface Notification {
     id: string;
     type: 'record' | 'experience' | 'collection' | 'comment' | 'user';
     title?: string;
+    commentId?: string; // 用于提及通知，跳转到具体评论
   };
 }
 
@@ -172,6 +173,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
         id: String(data.resource_id),
         type: mappedType,
         title: data.resource_title ? String(data.resource_title) : undefined,
+        commentId: data.comment_id ? String(data.comment_id) : undefined,
       } : undefined,
     };
   };
@@ -265,9 +267,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
       // 导航到相关内容
       if (notification.target && notification.target.id) {
         const targetId = notification.target.id;
+        const commentId = notification.target.commentId;
+        
         switch (notification.target.type) {
           case 'record':
-            navigate(`/records/${targetId}`);
+            // 提及通知需要跳转到具体评论位置
+            if (notification.type === 'mention' && commentId) {
+              navigate(`/records/${targetId}?commentId=${commentId}`);
+            } else {
+              navigate(`/records/${targetId}`);
+            }
             break;
           case 'experience':
             navigate(`/experiences/${targetId}`);
@@ -276,11 +285,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
             navigate(`/collections/${targetId}`);
             break;
           case 'comment':
-            // 评论通知跳转到对应的记录/经验详情页
-            navigate(`/records/${targetId}`);
+            // 评论通知跳转到对应的记录/经验详情页，并定位到评论
+            navigate(`/records/${targetId}?commentId=${targetId}`);
             break;
           case 'user':
-            // 关注通知 - 暂时不跳转（没有用户详情页）
+            // 关注通知 - 跳转到用户主页
+            navigate(`/users/${targetId}`);
             break;
           default:
             console.warn('Unknown notification target type:', notification.target.type);
@@ -538,7 +548,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
               }}
             >
               <button 
-                className="w-full flex items-center justify-center gap-2 text-sm transition-colors"
+                onClick={() => {
+                  onClose();
+                  setTimeout(() => {
+                    navigate('/settings/notifications');
+                  }, 100);
+                }}
+                className="w-full flex items-center justify-center gap-2 text-sm transition-colors hover:bg-[var(--bg-card)] rounded-lg p-2"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 <Settings className="w-4 h-4" />

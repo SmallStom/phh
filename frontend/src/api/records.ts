@@ -6,6 +6,7 @@ export const recordsApi = {
     page?: number;
     page_size?: number;
     search?: string;
+    user_id?: string;
   }): Promise<RecordListResponse> {
     const response = await api.get<RecordListResponse>('/records/public', { params });
     return response.data;

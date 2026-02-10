@@ -17,6 +17,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @router.post("/register", response_model=Token)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    # 检查邮箱是否已存在
     existing_user = db.query(User).filter(
         User.email == user_data.email
     ).first()
@@ -24,7 +25,18 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="邮箱已经注册，请直接登录"
+        )
+    
+    # 检查用户名是否已存在（全局唯一）
+    existing_username = db.query(User).filter(
+        User.username == user_data.username
+    ).first()
+    
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="用户名已存在，请使用其他名称"
         )
     
     tenant = db.query(Tenant).filter(Tenant.slug == user_data.tenant_slug).first()

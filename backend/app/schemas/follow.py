@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 
 class FollowBase(BaseModel):
@@ -12,9 +13,9 @@ class FollowCreate(BaseModel):
 
 
 class FollowResponse(BaseModel):
-    id: str
-    follower_id: str
-    following_id: str
+    id: UUID
+    follower_id: UUID
+    following_id: UUID
     created_at: datetime
     
     class Config:
@@ -22,7 +23,7 @@ class FollowResponse(BaseModel):
 
 
 class FollowUserInfo(BaseModel):
-    id: str
+    id: UUID
     username: str
     
     class Config:
@@ -30,9 +31,9 @@ class FollowUserInfo(BaseModel):
 
 
 class FollowWithUserResponse(BaseModel):
-    id: str
-    follower_id: str
-    following_id: str
+    id: UUID
+    follower_id: UUID
+    following_id: UUID
     created_at: datetime
     follower: Optional[FollowUserInfo] = None
     following: Optional[FollowUserInfo] = None

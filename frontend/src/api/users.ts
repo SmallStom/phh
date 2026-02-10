@@ -25,11 +25,8 @@ export const usersApi = {
   async uploadAvatar(file: File): Promise<User> {
     const formData = new FormData();
     formData.append('file', file);
-    const response = await api.post('/upload/avatar', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // 不设置 Content-Type，让浏览器自动设置（包含 boundary）
+    const response = await api.post('/upload/avatar', formData);
     return response.data;
   },
 
@@ -53,6 +50,12 @@ export const usersApi = {
   // 获取指定用户公开资料
   async getUserProfile(userId: string): Promise<User & UserStats> {
     const response = await api.get(`/users/${userId}/profile`);
+    return response.data;
+  },
+
+  // 通过用户名获取用户公开资料
+  async getUserProfileByUsername(username: string): Promise<User & UserStats> {
+    const response = await api.get(`/users/by-username/${username}/profile`);
     return response.data;
   },
 };

@@ -155,3 +155,49 @@ async def get_public_like_status(
         is_liked=False,
         like_count=like_count
     )
+
+
+@router.get("/my/likes", response_model=dict)
+async def get_my_likes(
+    page: int = 1,
+    page_size: int = 20,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取当前用户喜欢的记录列表"""
+    from app.schemas.record import RecordResponse
+    
+    # 查询用户喜欢的记录
+    likes_query = db.query(Like).filter(
+        Like.user_id == current_user.id
+    ).order_by(Like.created_at.desc())
+    
+    total = likes_query.count()
+    likes = likes_query.offset((page - 1) * page_size).limit(page_size).all()
+    
+    # 获取记录详情
+    record_ids = [like.record_id for like in likes]
+    records = db.query(Record).filter(
+        Record.id.in_(record_ids),
+        Record.is_public == True
+    ).all()
+    
+    # 构建响应
+    record_map = {str(r.id): r for r in records}
+    result = []
+    for like in likes:
+        record = record_map.get(str(like.record_id))
+        if record:
+            record_data = RecordResponse.model_validate(record)
+            result.append({
+                "like_id": str(like.id),
+                "liked_at": like.created_at.isoformat(),
+                "record": record_data
+            })
+    
+    return {
+        "data": result,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }

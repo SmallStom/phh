@@ -19,15 +19,25 @@ async def get_public_records(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
+    user_id: Optional[str] = Query(None, alias="user_id"),
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
+    """获取公开记录列表
+    
+    Args:
+        user_id: 可选，筛选特定用户的公开记录
+    """
     query = db.query(Record).options(
         joinedload(Record.user)
     ).filter(
         Record.status == RecordStatus.PUBLISHED,
         Record.is_public == True
     )
+    
+    # 按用户筛选
+    if user_id:
+        query = query.filter(Record.user_id == user_id)
     
     if search:
         query = query.filter(

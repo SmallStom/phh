@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Heart, MessageCircle } from 'lucide-react';
 import { recordsApi } from '../api/records';
 import { experiencesApi } from '../api/experiences';
 import { collectionsApi } from '../api/collections';
@@ -182,9 +183,38 @@ export const Home: React.FC = () => {
     }
   };
 
-  const handleOpenComments = (e: React.MouseEvent, record: UserRecord) => {
-    e.stopPropagation();
-    setSelectedRecord(record);
+  const handleSearchResultLike = async (record: UserRecord) => {
+    if (!isAuthenticated) { alert('请先登录'); return; }
+    try {
+      if (record.is_liked) {
+        await likesApi.unlikeRecord(record.id);
+        record.is_liked = false;
+        record.like_count = Math.max(0, (record.like_count || 0) - 1);
+      } else {
+        await likesApi.likeRecord(record.id);
+        record.is_liked = true;
+        record.like_count = (record.like_count || 0) + 1;
+      }
+      // 更新 results 中的记录
+      setResults(prev => ({
+        ...prev,
+        records: prev.records.map(r => r.id === record.id ? { ...record } : r)
+      }));
+    } catch (error) {
+      console.error('Failed to like/unlike record:', error);
+      alert('操作失败，请重试');
+    }
+  };
+
+  const handleOpenComments = (e: React.MouseEvent | UserRecord, record?: UserRecord) => {
+    if ('stopPropagation' in e) {
+      // 来自 ContentList 的调用方式
+      e.stopPropagation();
+      setSelectedRecord(record!);
+    } else {
+      // 来自 SearchResults 的调用方式，直接传入 record
+      setSelectedRecord(e);
+    }
     setCommentModalOpen(true);
   };
 
@@ -217,7 +247,7 @@ export const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative pt-24 pb-12 px-4">
+      <div className="relative pt-24 pb-8 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="heading-display text-4xl md:text-5xl lg:text-6xl text-[var(--text-primary)] mb-4 animate-fade-in">
             美好广场
@@ -229,17 +259,23 @@ export const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Search Section */}
-      <div className="sticky top-0 z-30 px-4 mb-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="card p-2 flex gap-2">
+      {/* Main Content - 居中布局 */}
+      <div className="max-w-7xl mx-auto px-4 pb-16">
+        {/* Search Section - 与内容区同宽 */}
+        <div className="max-w-6xl mx-auto mb-8">
+          <div className="flex gap-2 items-center">
             <div className="flex-1 relative">
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="input-field pr-10"
+                className="w-full px-4 py-2.5 rounded-xl transition-all duration-200 outline-none pr-10"
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                }}
                 placeholder="搜索美好、风采、收藏..."
               />
               {query && (
@@ -254,22 +290,21 @@ export const Home: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={loading || !query.trim()}
-              className="btn-primary whitespace-nowrap disabled:opacity-50"
+              className="btn-primary whitespace-nowrap disabled:opacity-50 h-[42px] flex items-center justify-center"
             >
               {loading ? (
-              <span className="flex items-center gap-2">
-                <LoadingDots size="sm" />
-                搜索中
-              </span>
-            ) : '搜索'}
+                <span className="flex items-center gap-2">
+                  <LoadingDots size="sm" />
+                  搜索中
+                </span>
+              ) : '搜索'}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="flex gap-8">
+        {/* Content - 与搜索框同宽 */}
+        <div className="max-w-6xl mx-auto">
+          <div className="flex gap-8">
           {/* Content Area */}
           <div className="flex-1">
             {searched ? (
@@ -279,6 +314,8 @@ export const Home: React.FC = () => {
                 onRecordClick={handleRecordClick}
                 onExperienceClick={handleExperienceClick}
                 onCollectionClick={handleCollectionClick}
+                onOpenComments={handleOpenComments}
+                onLike={handleSearchResultLike}
                 query={query}
                 onClearSearch={handleClearSearch}
               />
@@ -292,6 +329,7 @@ export const Home: React.FC = () => {
                 jumpToPage={jumpToPage}
                 isAuthenticated={isAuthenticated}
                 onRecordClick={handleRecordClick}
+                onUserClick={(userId) => navigate(`/users/${userId}`)}
                 onLike={handleLike}
                 onOpenComments={handleOpenComments}
                 onPageChange={setPage}
@@ -304,12 +342,13 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="w-80 hidden lg:block">
+          <div className="w-80 hidden lg:block flex-shrink-0">
             <div className="sticky top-36">
               <HotContent />
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Comment Modal */}
@@ -331,12 +370,14 @@ interface SearchResultsProps {
   onRecordClick: (id: string) => void;
   onExperienceClick: (id: string) => void;
   onCollectionClick: (collection: Collection) => void;
+  onOpenComments?: (record: UserRecord) => void;
+  onLike?: (record: UserRecord) => void;
   query?: string;
   onClearSearch?: () => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
-  results, isAuthenticated, onRecordClick, onExperienceClick, onCollectionClick, query, onClearSearch: handleClearSearch
+  results, isAuthenticated, onRecordClick, onExperienceClick, onCollectionClick, onOpenComments, onLike, query, onClearSearch: handleClearSearch
 }) => (
   <div className="space-y-8">
     {results.records.length > 0 && (
@@ -352,16 +393,83 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               onClick={() => onRecordClick(record.id)}
               className="card card-hover p-5 cursor-pointer"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="font-medium text-[var(--text-primary)] mb-2">{record.title || '无标题'}</h3>
-                  <div className="text-[var(--text-secondary)] text-sm line-clamp-2">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-lg text-[var(--text-primary)] mb-2">{record.title || '无标题'}</h3>
+                  <div className="text-[var(--text-secondary)] text-sm line-clamp-3 overflow-hidden">
                     <HtmlContent content={record.content} />
                   </div>
                 </div>
-                {record.user && (
-                  <span className="text-xs text-[var(--text-muted)] whitespace-nowrap">{record.user.username}</span>
-                )}
+              </div>
+
+              {/* Images */}
+              {record.image_urls && record.image_urls.length > 0 && (
+                <div className={`grid gap-2 mb-3 ${
+                  record.image_urls.length === 1 ? 'grid-cols-1' :
+                  record.image_urls.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+                }`}>
+                  {record.image_urls.slice(0, 3).map((url, idx) => (
+                    <div key={idx} className="relative aspect-video rounded-lg overflow-hidden bg-[var(--bg-secondary)]">
+                      <img
+                        src={url}
+                        alt={`图片 ${idx + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-3 border-t border-[var(--border-color)]">
+                <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+                  {record.user && (
+                    <span className="flex items-center gap-1">
+                      <span className="w-5 h-5 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-xs">
+                        {record.user.username.charAt(0).toUpperCase()}
+                      </span>
+                      {record.user.username}
+                    </span>
+                  )}
+                  <span>•</span>
+                  <span>{new Date(record.created_at).toLocaleDateString()}</span>
+                  {record.record_type && (
+                    <span className="px-2 py-0.5 bg-[var(--bg-secondary)] rounded text-[var(--text-secondary)]">
+                      {record.record_type}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-xs">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onLike?.(record);
+                    }}
+                    className={`flex items-center gap-1 transition-colors ${
+                      record.is_liked
+                        ? 'text-terracotta-500'
+                        : 'text-[var(--text-muted)] hover:text-terracotta-500'
+                    }`}
+                    disabled={!isAuthenticated}
+                    title={isAuthenticated ? (record.is_liked ? '取消点赞' : '点赞') : '请先登录'}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${record.is_liked ? 'fill-current' : ''}`} />
+                    {record.like_count || 0}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenComments?.(record);
+                    }}
+                    className="flex items-center gap-1 text-[var(--text-muted)] hover:text-terracotta-500 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    {record.comment_count || 0}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -427,6 +535,7 @@ interface ContentListProps {
   jumpToPage: string;
   isAuthenticated: boolean;
   onRecordClick: (id: string) => void;
+  onUserClick: (userId: string) => void;
   onLike: (e: React.MouseEvent, id: string) => void;
   onOpenComments: (e: React.MouseEvent, record: UserRecord) => void;
   onPageChange: (page: number) => void;
@@ -438,7 +547,7 @@ interface ContentListProps {
 
 const ContentList: React.FC<ContentListProps> = ({
   loading, publicRecords, total, page, pageSize, jumpToPage,
-  onRecordClick, onLike, onOpenComments, onPageChange, onPageSizeChange,
+  onRecordClick, onUserClick, onLike, onOpenComments, onPageChange, onPageSizeChange,
   onJumpToPage, onJumpToPageSubmit, onKeyPress
 }) => {
 
@@ -479,10 +588,22 @@ const ContentList: React.FC<ContentListProps> = ({
                 </h2>
                 {record.user && (
                   <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-xs">
-                      {record.user.username.charAt(0).toUpperCase()}
-                    </div>
-                    <span>{record.user.username}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onUserClick(record.user!.id);
+                      }}
+                      className="flex items-center gap-2 hover:text-[var(--accent-color)] transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-xs overflow-hidden">
+                        {record.user.avatar ? (
+                          <img src={record.user.avatar} alt={record.user.username} className="w-full h-full object-cover" />
+                        ) : (
+                          record.user.username.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <span>{record.user.username}</span>
+                    </button>
                     <span>•</span>
                     <span>{formatDateTime(record.published_at || record.created_at)}</span>
                   </div>

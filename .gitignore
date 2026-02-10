@@ -83,3 +83,9 @@ htmlcov/
 
 # trae 文件夹
 .trae/
+
+# uploads 文件夹
+backend/uploads/
+
+# 数据库迁移文件
+backend/alembic/
