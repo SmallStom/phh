@@ -65,7 +65,8 @@ export const HotContent: React.FC = () => {
       // navigate(`/users/${item.id}`);
       toast('用户主页功能开发中...');
     } else {
-      navigate(`/${activeTab.slice(0, -1)}/${item.id}`);
+      // 使用复数形式的路由：/records/, /experiences/, /collections/
+      navigate(`/${activeTab}/${item.id}`);
     }
   };
 
