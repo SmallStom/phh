@@ -3,7 +3,25 @@ import { useAuthStore } from '../store/authStore';
 
 // 支持 VITE_WS_URL 环境变量，如果没有则根据 VITE_API_URL 推断
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const WS_URL = import.meta.env.VITE_WS_URL || API_URL.replace(/^http/, 'ws');
+
+// 处理 WS_URL：移除 /api 后缀（WebSocket 路由没有 /api 前缀）
+const getWebSocketUrl = (): string => {
+  // 如果配置了 VITE_WS_URL，直接使用
+  const envWsUrl = import.meta.env.VITE_WS_URL;
+  if (envWsUrl) {
+    return envWsUrl;
+  }
+  
+  // 否则从 API_URL 推断
+  // 先移除末尾的 /api，然后将 http 替换为 ws
+  let baseUrl = API_URL;
+  if (baseUrl.endsWith('/api')) {
+    baseUrl = baseUrl.slice(0, -4); // 移除 /api
+  }
+  return baseUrl.replace(/^http/, 'ws');
+};
+
+const WS_URL = getWebSocketUrl();
 
 export interface NotificationMessage {
   type: 'notification' | 'unread_count' | 'refresh_unread_count' | 'ping' | 'pong' | 'system';
@@ -70,6 +88,7 @@ export function useWebSocket(): WebSocketHook {
 
     try {
       const wsUrl = `${WS_URL}/ws/notifications?token=${token}`;
+      console.log('Connecting to WebSocket:', wsUrl); // 调试用
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
@@ -123,13 +142,15 @@ export function useWebSocket(): WebSocketHook {
         }
       };
 
-      ws.onerror = () => {
+      ws.onerror = (error) => {
         // WebSocket: Error
+        console.error('WebSocket error:', error);
       };
 
       wsRef.current = ws;
     } catch (error) {
       // WebSocket: Failed to connect
+      console.error('WebSocket connection failed:', error);
     }
   }, [token, isAuthenticated]);
 
