@@ -47,8 +47,8 @@ services:
       - .env
     environment:
       - REDIS_URL=redis://redis:6379/0
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       # 上传的文件挂载到宿主机
       - ./data/uploads:/app/uploads
@@ -66,9 +66,25 @@ services:
     container_name: phh-frontend
     env_file:
       - .env
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     depends_on:
+      - backend
+    networks:
+      - phh-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: phh-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
       - backend
     networks:
       - phh-network
