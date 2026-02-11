@@ -13,6 +13,7 @@ from app.models.notification import Notification, NotificationType
 from app.models.notification_settings import NotificationSettings
 from app.models.mention import Mention
 from app.models.share import Share
+from app.models.daily_guess import DailyGuessItem, UserDailyGuess, DailyGuessLeaderboard
 from app.core.database import Base
 
 __all__ = [
@@ -38,4 +39,7 @@ __all__ = [
     "NotificationSettings",
     "Mention",
     "Share",
+    "DailyGuessItem",
+    "UserDailyGuess",
+    "DailyGuessLeaderboard",
 ]

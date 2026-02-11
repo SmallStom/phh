@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_TYPES: list = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     ALLOWED_FILE_TYPES: list = ["application/pdf", "text/plain", "application/json"]
     
+    # AI 助手配置 (OpenRouter)
+    OPENROUTER_API_KEY: Optional[str] = None
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OPENROUTER_MODEL: str = "anthropic/claude-3.5-sonnet"  # 默认模型
+    AI_MAX_TOKENS: int = 2000
+    AI_TEMPERATURE: float = 0.7
+    
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):

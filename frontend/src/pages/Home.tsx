@@ -8,6 +8,7 @@ import { likesApi } from '../api/likes';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
 import { HotContent } from '../components/HotContent';
+import { DailyGuessCard } from '../components/games/dailyGuess';
 import CommentModal from '../components/CommentModal';
 import { RecordCardSkeleton } from '../components/ui/Skeleton';
 import { EmptyPlaza, EmptySearch } from '../components/feedback/EmptyState';
@@ -342,8 +343,9 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="w-80 hidden lg:block flex-shrink-0">
-            <div className="sticky top-36">
+          <div className="w-80 hidden lg:block flex-shrink-0 space-y-6">
+            <div className="sticky top-36 space-y-6">
+              <DailyGuessCard />
               <HotContent />
             </div>
           </div>

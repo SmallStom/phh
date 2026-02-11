@@ -57,7 +57,7 @@ export function useWebSocket(): WebSocketHook {
 
   const connect = useCallback(() => {
     if (!isAuthenticated || !token) {
-      console.log('WebSocket: Not authenticated, skipping connection');
+      // WebSocket: Not authenticated, skipping connection
       return;
     }
 
@@ -71,7 +71,7 @@ export function useWebSocket(): WebSocketHook {
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        console.log('WebSocket: Connected');
+        // WebSocket: Connected
         setIsConnected(true);
         
         // 启动心跳
@@ -85,7 +85,6 @@ export function useWebSocket(): WebSocketHook {
       ws.onmessage = (event) => {
         try {
           const message: NotificationMessage = JSON.parse(event.data);
-          console.log('WebSocket: Received message', message);
           setLastMessage(message);
 
           // 处理ping
@@ -93,12 +92,12 @@ export function useWebSocket(): WebSocketHook {
             ws.send(JSON.stringify({ action: 'pong' }));
           }
         } catch (error) {
-          console.error('WebSocket: Failed to parse message', error);
+          // WebSocket: Failed to parse message
         }
       };
 
       ws.onclose = (event) => {
-        console.log('WebSocket: Disconnected', event.code, event.reason);
+        // WebSocket: Disconnected
         setIsConnected(false);
         
         // 清理定时器
@@ -109,35 +108,32 @@ export function useWebSocket(): WebSocketHook {
 
         // 认证失败（Token过期），不重连，需要重新登录
         if (event.code === 4001 || event.code === 1008) {
-          console.log('WebSocket: Authentication failed, please login again');
-          // 可以在这里触发全局事件通知用户重新登录
+          // WebSocket: Authentication failed
           return;
         }
 
         // 自动重连（非主动断开且非认证失败）
         if (event.code !== 1000 && event.code !== 1001) {
-          console.log('WebSocket: Reconnecting in 5s...');
+          // WebSocket: Reconnecting in 5s
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, 5000);
         }
       };
 
-      ws.onerror = (error) => {
-        console.error('WebSocket: Error', error);
+      ws.onerror = () => {
+        // WebSocket: Error
       };
 
       wsRef.current = ws;
     } catch (error) {
-      console.error('WebSocket: Failed to connect', error);
+      // WebSocket: Failed to connect
     }
   }, [token, isAuthenticated]);
 
   const sendMessage = useCallback((message: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(message));
-    } else {
-      console.warn('WebSocket: Not connected, cannot send message');
     }
   }, []);
 

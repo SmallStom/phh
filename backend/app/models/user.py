@@ -76,6 +76,13 @@ class User(BaseModel):
     )
     shares = relationship("Share", back_populates="user", cascade="all, delete-orphan")
     
+    # 每日一猜游戏记录
+    daily_guesses = relationship(
+        "UserDailyGuess",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    
     @property
     def unread_notification_count(self) -> int:
         """未读通知数量"""
