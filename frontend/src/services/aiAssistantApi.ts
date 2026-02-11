@@ -2,9 +2,12 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// 处理 API_URL，如果已经以 /api 结尾，则不再添加
+const BASE_URL = API_URL.endsWith('/api') ? `${API_URL}/ai-assistant` : `${API_URL}/api/ai-assistant`;
+
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: `${API_URL}/api/ai-assistant`,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -72,7 +75,7 @@ export const aiAssistantApi = {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_URL}/api/ai-assistant/chat/stream`, {
+      const response = await fetch(`${BASE_URL}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +146,7 @@ export const aiAssistantApi = {
     }
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_URL}/api/ai-assistant/chat/with-image`, {
+    const response = await fetch(`${BASE_URL}/chat/with-image`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

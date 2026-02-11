@@ -1,7 +1,9 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+// 支持 VITE_WS_URL 环境变量，如果没有则根据 VITE_API_URL 推断
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_URL = import.meta.env.VITE_WS_URL || API_URL.replace(/^http/, 'ws');
 
 export interface NotificationMessage {
   type: 'notification' | 'unread_count' | 'refresh_unread_count' | 'ping' | 'pong' | 'system';
