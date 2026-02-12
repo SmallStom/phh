@@ -88,7 +88,7 @@ export function useWebSocket(): WebSocketHook {
 
     try {
       const wsUrl = `${WS_URL}/ws/notifications?token=${token}`;
-      console.log('Connecting to WebSocket:', wsUrl); // 调试用
+      // console.log('Connecting to WebSocket:', wsUrl); // 调试用
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {

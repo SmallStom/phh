@@ -2,9 +2,12 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// 处理 API_URL，如果已经以 /api 结尾，则不再添加
+const BASE_URL = API_URL.endsWith('/api') ? `${API_URL}/daily-guess` : `${API_URL}/api/daily-guess`;
+
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: `${API_URL}/api/daily-guess`,
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
