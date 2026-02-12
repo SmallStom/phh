@@ -1,22 +1,17 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 
-// 支持 VITE_WS_URL 环境变量，如果没有则根据 VITE_API_URL 推断
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// 处理 WS_URL：移除 /api 后缀（WebSocket 路由没有 /api 前缀）
 const getWebSocketUrl = (): string => {
-  // 如果配置了 VITE_WS_URL，直接使用
   const envWsUrl = import.meta.env.VITE_WS_URL;
   if (envWsUrl) {
     return envWsUrl;
   }
   
-  // 否则从 API_URL 推断
-  // 先移除末尾的 /api，然后将 http 替换为 ws
   let baseUrl = API_URL;
   if (baseUrl.endsWith('/api')) {
-    baseUrl = baseUrl.slice(0, -4); // 移除 /api
+    baseUrl = baseUrl.slice(0, -4);
   }
   return baseUrl.replace(/^http/, 'ws');
 };
@@ -38,19 +33,6 @@ export interface WebSocketHook {
   disconnect: () => void;
 }
 
-/**
- * WebSocket Hook for real-time notifications
- * 
- * Usage:
- * const { isConnected, lastMessage, sendMessage } = useWebSocket();
- * 
- * useEffect(() => {
- *   if (lastMessage?.type === 'notification') {
- *     // Handle new notification
- *     showToast(lastMessage.data.title);
- *   }
- * }, [lastMessage]);
- */
 export function useWebSocket(): WebSocketHook {
   const { token, isAuthenticated } = useAuthStore();
   const [isConnected, setIsConnected] = useState(false);
@@ -77,30 +59,25 @@ export function useWebSocket(): WebSocketHook {
 
   const connect = useCallback(() => {
     if (!isAuthenticated || !token) {
-      // WebSocket: Not authenticated, skipping connection
       return;
     }
 
-    // 避免重复连接
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       return;
     }
 
     try {
       const wsUrl = `${WS_URL}/ws/notifications?token=${token}`;
-      // console.log('Connecting to WebSocket:', wsUrl); // 调试用
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        // WebSocket: Connected
         setIsConnected(true);
         
-        // 启动心跳
         pingIntervalRef.current = setInterval(() => {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ action: 'pong' }));
           }
-        }, 30000); // 30秒心跳
+        }, 30000);
       };
 
       ws.onmessage = (event) => {
@@ -108,49 +85,40 @@ export function useWebSocket(): WebSocketHook {
           const message: NotificationMessage = JSON.parse(event.data);
           setLastMessage(message);
 
-          // 处理ping
           if (message.type === 'ping') {
             ws.send(JSON.stringify({ action: 'pong' }));
           }
         } catch (error) {
-          // WebSocket: Failed to parse message
+          // ignore parse errors
         }
       };
 
       ws.onclose = (event) => {
-        // WebSocket: Disconnected
         setIsConnected(false);
         
-        // 清理定时器
         if (pingIntervalRef.current) {
           clearInterval(pingIntervalRef.current);
           pingIntervalRef.current = null;
         }
 
-        // 认证失败（Token过期），不重连，需要重新登录
         if (event.code === 4001 || event.code === 1008) {
-          // WebSocket: Authentication failed
           return;
         }
 
-        // 自动重连（非主动断开且非认证失败）
         if (event.code !== 1000 && event.code !== 1001) {
-          // WebSocket: Reconnecting in 5s
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, 5000);
         }
       };
 
-      ws.onerror = (error) => {
-        // WebSocket: Error
-        console.error('WebSocket error:', error);
+      ws.onerror = () => {
+        // ignore errors
       };
 
       wsRef.current = ws;
     } catch (error) {
-      // WebSocket: Failed to connect
-      console.error('WebSocket connection failed:', error);
+      // ignore connection errors
     }
   }, [token, isAuthenticated]);
 
@@ -160,13 +128,11 @@ export function useWebSocket(): WebSocketHook {
     }
   }, []);
 
-  // 组件挂载时连接，卸载时断开
   useEffect(() => {
     connect();
     return () => disconnect();
   }, [connect, disconnect]);
 
-  // 监听认证状态变化
   useEffect(() => {
     if (isAuthenticated && token) {
       connect();
@@ -184,9 +150,6 @@ export function useWebSocket(): WebSocketHook {
   };
 }
 
-/**
- * 标记通知为已读（通过WebSocket）
- */
 export function markNotificationAsRead(ws: WebSocketHook, notificationId: string) {
   ws.sendMessage({
     action: 'mark_read',
@@ -194,9 +157,6 @@ export function markNotificationAsRead(ws: WebSocketHook, notificationId: string
   });
 }
 
-/**
- * 标记所有通知为已读（通过WebSocket）
- */
 export function markAllNotificationsAsRead(ws: WebSocketHook) {
   ws.sendMessage({
     action: 'mark_all_read',

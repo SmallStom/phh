@@ -399,9 +399,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-lg text-[var(--text-primary)] mb-2">{record.title || '无标题'}</h3>
-                  <div className="text-[var(--text-secondary)] text-sm line-clamp-3 overflow-hidden">
-                    <HtmlContent content={record.content} />
-                  </div>
+                  <HtmlContent content={record.content} lineClamp={3} className="text-sm" />
                 </div>
               </div>
 
@@ -618,9 +616,7 @@ const ContentList: React.FC<ContentListProps> = ({
             </div>
 
             {/* Content */}
-            <div className="text-[var(--text-secondary)] line-clamp-3 mb-4 leading-relaxed">
-              <HtmlContent content={record.content} />
-            </div>
+            <HtmlContent content={record.content} lineClamp={3} className="mb-4 leading-relaxed" />
 
             {/* Images */}
             {record.image_urls && record.image_urls.length > 0 && (

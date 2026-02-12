@@ -418,16 +418,24 @@
   padding: 0;
 }
 
-/* 内容截断样式 */
-.line-clamp-2 .html-content,
-.line-clamp-3 .html-content {
+/* 内容截断样式 - 直接应用到 html-content 元素 */
+.html-content.line-clamp-1,
+.html-content.line-clamp-2,
+.html-content.line-clamp-3,
+.html-content.line-clamp-4,
+.html-content.line-clamp-5 {
   display: -webkit-box;
-  -webkit-line-clamp: inherit;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* 确保 line-clamp 在父元素上工作 */
+.html-content.line-clamp-1 { -webkit-line-clamp: 1; }
+.html-content.line-clamp-2 { -webkit-line-clamp: 2; }
+.html-content.line-clamp-3 { -webkit-line-clamp: 3; }
+.html-content.line-clamp-4 { -webkit-line-clamp: 4; }
+.html-content.line-clamp-5 { -webkit-line-clamp: 5; }
+
+/* 父元素截断样式 */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
