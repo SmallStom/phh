@@ -388,80 +388,80 @@ export const RecordDetail: React.FC = () => {
   const typeInfo = typeIcons[record.record_type] || typeIcons.note;
 
   return (
-    <div className="min-h-screen pb-12" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="min-h-screen pb-8 sm:pb-12" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* 顶部导航栏 */}
       <div className="sticky top-0 z-30 bg-[var(--bg-primary)]/95 backdrop-blur-sm border-b border-[var(--border-color)]">
-        <div className="max-w-3xl mx-auto px-4 py-3">
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
           <div className="flex justify-between items-center">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 px-3 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
                        transition-colors rounded-lg hover:bg-[var(--bg-secondary)]"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm font-medium">返回</span>
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs sm:text-sm font-medium">返回</span>
             </button>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-1">
               <button
                 onClick={handleCollect}
-                className={`p-2 rounded-lg transition-all duration-200 ${
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                   isCollected 
                     ? 'text-terracotta-500 bg-terracotta-50 dark:bg-terracotta-900/20' 
                     : 'text-[var(--text-secondary)] hover:text-terracotta-500 hover:bg-[var(--bg-secondary)]'
                 }`}
                 title={isCollected ? '已收藏' : '收藏'}
               >
-                <Bookmark className={`w-5 h-5 ${isCollected ? 'fill-current' : ''}`} />
+                <Bookmark className={`w-4 h-4 sm:w-5 sm:h-5 ${isCollected ? 'fill-current' : ''}`} />
               </button>
               
               <button
                 onClick={handleShare}
-                className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
+                className="p-1.5 sm:p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
                          hover:bg-[var(--bg-secondary)] transition-all duration-200"
                 title="分享"
               >
-                <Share2 className="w-5 h-5" />
+                <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               
               {isAuthenticated && (
                 <div className="relative" ref={actionsRef}>
                   <button
                     onClick={() => setShowActions(!showActions)}
-                    className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
+                    className="p-1.5 sm:p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
                              hover:bg-[var(--bg-secondary)] transition-all duration-200"
                   >
-                    <MoreHorizontal className="w-5 h-5" />
+                    <MoreHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   
                   {showActions && (
-                    <div className="absolute right-0 top-full mt-2 w-40 py-2 rounded-xl 
+                    <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 py-2 rounded-xl 
                                   bg-[var(--card-bg)] border border-[var(--border-color)] shadow-lg z-50">
                       <button
                         onClick={() => { setIsEditing(true); setShowActions(false); }}
-                        className="w-full px-4 py-2 text-left text-sm text-[var(--text-secondary)] 
+                        className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[var(--text-secondary)] 
                                  hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] 
                                  transition-colors flex items-center gap-2"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         编辑
                       </button>
                       {record.status !== 'published' && (
                         <button
                           onClick={() => { handlePublish(); setShowActions(false); }}
-                          className="w-full px-4 py-2 text-left text-sm text-forest-600 
+                          className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-forest-600 
                                    hover:bg-forest-50 transition-colors flex items-center gap-2"
                         >
-                          <Send className="w-4 h-4" />
+                          <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           发布
                         </button>
                       )}
                       <button
                         onClick={() => { handleDelete(); setShowActions(false); }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 
+                        className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-red-600 
                                  hover:bg-red-50 transition-colors flex items-center gap-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         删除
                       </button>
                     </div>
@@ -474,67 +474,71 @@ export const RecordDetail: React.FC = () => {
       </div>
 
       {/* 主内容区域 */}
-      <div className="max-w-3xl mx-auto px-4 pt-6">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6">
         {isEditing ? (
-          <div className="bg-[var(--card-bg)] rounded-2xl shadow-card p-6 space-y-6">
+          <div className="bg-[var(--card-bg)] rounded-xl sm:rounded-2xl shadow-card p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">标题</label>
+              <label className="block text-xs sm:text-sm font-medium text-[var(--text-secondary)] mb-1.5 sm:mb-2">标题</label>
               <input
                 type="text"
                 value={editData.title || ''}
                 onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                className="w-full px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] 
-                         rounded-xl text-[var(--text-primary)] focus:outline-none focus:ring-2 
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] 
+                         rounded-xl text-sm sm:text-base text-[var(--text-primary)] focus:outline-none focus:ring-2 
                          focus:ring-terracotta-500/50 transition-all"
                 placeholder="输入标题..."
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">内容</label>
+              <label className="block text-xs sm:text-sm font-medium text-[var(--text-secondary)] mb-1.5 sm:mb-2">内容</label>
               <textarea
                 value={editData.content || ''}
                 onChange={(e) => setEditData({ ...editData, content: e.target.value })}
-                className="w-full h-64 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] 
-                         rounded-xl text-[var(--text-primary)] resize-none focus:outline-none 
+                className="w-full h-48 sm:h-64 px-3 sm:px-4 py-2 sm:py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] 
+                         rounded-xl text-sm sm:text-base text-[var(--text-primary)] resize-none focus:outline-none 
                          focus:ring-2 focus:ring-terracotta-500/50 transition-all"
                 placeholder="写下你的美好瞬间..."
               />
             </div>
             
-            <div className="flex gap-3">
-              <button onClick={() => setIsEditing(false)} className="flex-1 py-3 rounded-xl font-medium
+            <div className="flex gap-2 sm:gap-3">
+              <button onClick={() => setIsEditing(false)} className="flex-1 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-medium
                        bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--border-color)] transition-all">
                 取消
               </button>
-              <button onClick={handleUpdate} className="flex-1 py-3 rounded-xl font-medium
+              <button onClick={handleUpdate} className="flex-1 py-2 sm:py-3 rounded-xl text-sm sm:text-base font-medium
                        bg-terracotta-500 text-white hover:bg-terracotta-600 transition-all">
                 保存
               </button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* 文章内容卡片 */}
-            <article className="bg-[var(--card-bg)] rounded-2xl shadow-card overflow-hidden">
+            <article className="bg-[var(--card-bg)] rounded-xl sm:rounded-2xl shadow-card overflow-hidden">
               {/* 作者信息头部 */}
-              <div className="px-6 pt-6 pb-4 border-b border-[var(--border-color)]/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 
-                                  flex items-center justify-center text-white font-medium">
-                      {record.user?.username?.charAt(0).toUpperCase() || 'U'}
+              <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-[var(--border-color)]/50">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 
+                                  flex items-center justify-center text-white text-sm sm:font-medium flex-shrink-0">
+                      {record.user?.avatar ? (
+                        <img src={record.user.avatar} alt={record.user?.username || ''} className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        record.user?.username?.charAt(0).toUpperCase() || 'U'
+                      )}
                     </div>
-                    <div>
-                      <div className="font-medium text-[var(--text-primary)]">
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm sm:text-base text-[var(--text-primary)] truncate">
                         {record.user?.username || '匿名用户'}
                       </div>
-                      <div className="text-sm text-[var(--text-muted)]">
+                      <div className="text-xs sm:text-sm text-[var(--text-muted)]">
                         {formatDateTime(record.created_at)}
                       </div>
                     </div>
                   </div>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${typeInfo.color}`}>
+                  <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium flex-shrink-0 ${typeInfo.color}`}>
                     <span>{typeInfo.icon}</span>
                     <span>{typeInfo.label}</span>
                   </span>
@@ -542,21 +546,21 @@ export const RecordDetail: React.FC = () => {
               </div>
 
               {/* 内容区域 */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 {/* 标题 */}
-                <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-6 heading-display">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-4 sm:mb-6 heading-display">
                   {record.title || '无标题'}
                 </h1>
                 
                 {/* 内容 */}
-                <div className="prose prose-lg max-w-none">
+                <div className="prose prose-sm sm:prose-lg max-w-none">
                   <HtmlContent content={record.content} />
                 </div>
                 
                 {/* 图片展示 */}
                 {record.image_urls && record.image_urls.length > 0 && (
-                  <div className="mt-8">
-                    <div className={`grid gap-3 ${
+                  <div className="mt-6 sm:mt-8">
+                    <div className={`grid gap-2 sm:gap-3 ${
                       record.image_urls.length === 1 
                         ? 'grid-cols-1' 
                         : record.image_urls.length === 2 
@@ -566,7 +570,7 @@ export const RecordDetail: React.FC = () => {
                       {record.image_urls.map((url, index) => (
                         <div 
                           key={index} 
-                          className="relative aspect-video rounded-xl overflow-hidden bg-[var(--bg-secondary)] 
+                          className="relative aspect-video rounded-lg sm:rounded-xl overflow-hidden bg-[var(--bg-secondary)] 
                                    cursor-pointer group"
                           onClick={() => window.open(url, '_blank')}
                         >
@@ -585,10 +589,10 @@ export const RecordDetail: React.FC = () => {
                 
                 {/* 标签 */}
                 {record.tags.length > 0 && (
-                  <div className="mt-8 flex flex-wrap gap-2">
+                  <div className="mt-6 sm:mt-8 flex flex-wrap gap-1.5 sm:gap-2">
                     {record.tags.map((tag) => (
-                      <span key={tag} className="px-3 py-1 bg-[var(--bg-secondary)] text-[var(--text-secondary)]
-                                               rounded-full text-sm">
+                      <span key={tag} className="px-2 sm:px-3 py-0.5 sm:py-1 bg-[var(--bg-secondary)] text-[var(--text-secondary)]
+                                               rounded-full text-xs sm:text-sm">
                         #{tag}
                       </span>
                     ))}
@@ -598,24 +602,24 @@ export const RecordDetail: React.FC = () => {
 
               {/* 底部互动栏 */}
               {record.status !== 'draft' && (
-                <div className="px-6 py-4 border-t border-[var(--border-color)]/50 
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-[var(--border-color)]/50 
                               flex items-center justify-between">
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-4 sm:gap-6">
                     <button
                       onClick={handleLike}
-                      className={`flex items-center gap-2 transition-all duration-200 ${
+                      className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ${
                         isLiked ? 'text-red-500' : 'text-[var(--text-secondary)] hover:text-red-500'
                       }`}
                     >
-                      <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                      <span className="font-medium">{likeCount}</span>
+                      <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isLiked ? 'fill-current' : ''}`} />
+                      <span className="text-sm sm:text-base font-medium">{likeCount}</span>
                     </button>
                     <button
                       onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
+                      className="flex items-center gap-1.5 sm:gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all"
                     >
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="font-medium">{totalComments}</span>
+                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base font-medium">{totalComments}</span>
                     </button>
                   </div>
                 </div>
@@ -624,75 +628,75 @@ export const RecordDetail: React.FC = () => {
 
             {/* 评论区 */}
             {record.status !== 'draft' && (
-              <div id="comments" className="bg-[var(--card-bg)] rounded-2xl shadow-card overflow-hidden">
-                <div className="px-6 py-4 border-b border-[var(--border-color)]/50">
-                  <h2 className="text-lg font-bold text-[var(--text-primary)]">
+              <div id="comments" className="bg-[var(--card-bg)] rounded-xl sm:rounded-2xl shadow-card overflow-hidden">
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[var(--border-color)]/50">
+                  <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
                     评论 ({totalComments})
                   </h2>
                 </div>
                 
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {/* 评论输入框 */}
                   {isAuthenticated ? (
-                    <div className="mb-8">
-                      <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] focus-within:border-terracotta-400 focus-within:ring-1 focus-within:ring-terracotta-400/50 transition-all duration-200">
+                    <div className="mb-6 sm:mb-8">
+                      <div className="bg-[var(--bg-secondary)] rounded-lg sm:rounded-xl border border-[var(--border-color)] focus-within:border-terracotta-400 focus-within:ring-1 focus-within:ring-terracotta-400/50 transition-all duration-200">
                         <MentionInput
                           value={commentInput}
                           onChange={setCommentInput}
                           placeholder="写下你的评论..."
-                          rows={3}
-                          className="border-0 bg-transparent rounded-t-xl"
+                          rows={2}
+                          className="border-0 bg-transparent rounded-t-lg sm:rounded-t-xl text-sm sm:text-base"
                         />
                         
-                        <div className="flex justify-end px-4 pb-3">
+                        <div className="flex justify-end px-3 sm:px-4 pb-2 sm:pb-3">
                           <button
                             onClick={handleSubmitComment}
                             disabled={!commentInput.trim()}
-                            className="px-5 py-2 bg-terracotta-500 text-white rounded-lg text-sm font-medium
+                            className="px-4 sm:px-5 py-1.5 sm:py-2 bg-terracotta-500 text-white rounded-lg text-xs sm:text-sm font-medium
                                      hover:bg-terracotta-600 disabled:opacity-50 disabled:cursor-not-allowed 
-                                     transition-all flex items-center gap-2"
+                                     transition-all flex items-center gap-1.5 sm:gap-2"
                           >
-                            <Send className="w-4 h-4" />
+                            <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             发表评论
                           </button>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="mb-8 p-4 bg-[var(--bg-secondary)] rounded-xl text-center">
-                      <span className="text-[var(--text-secondary)]">请</span>
-                      <button onClick={() => navigate('/login')} className="text-terracotta-500 hover:underline mx-1">
+                    <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-[var(--bg-secondary)] rounded-lg sm:rounded-xl text-center">
+                      <span className="text-xs sm:text-sm text-[var(--text-secondary)]">请</span>
+                      <button onClick={() => navigate('/login')} className="text-xs sm:text-sm text-terracotta-500 hover:underline mx-1">
                         登录
                       </button>
-                      <span className="text-[var(--text-secondary)]">后发表评论</span>
+                      <span className="text-xs sm:text-sm text-[var(--text-secondary)]">后发表评论</span>
                     </div>
                   )}
 
                   {/* 评论列表 */}
                   {loadingComments ? (
-                    <div className="text-center py-8 text-[var(--text-secondary)]">
-                      <div className="animate-spin w-6 h-6 border-2 border-terracotta-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-                      加载中...
+                    <div className="text-center py-6 sm:py-8 text-[var(--text-secondary)]">
+                      <div className="animate-spin w-5 h-5 sm:w-6 sm:h-6 border-2 border-terracotta-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                      <span className="text-sm sm:text-base">加载中...</span>
                     </div>
                   ) : comments.length === 0 ? (
-                    <div className="text-center py-12">
-                      <MessageCircle className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-3 opacity-50" />
-                      <p className="text-[var(--text-secondary)]">暂无评论，快来发表第一条评论吧</p>
+                    <div className="text-center py-8 sm:py-12">
+                      <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-[var(--text-muted)] mx-auto mb-2 sm:mb-3 opacity-50" />
+                      <p className="text-sm sm:text-base text-[var(--text-secondary)]">暂无评论，快来发表第一条评论吧</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {comments.map((comment) => (
                         <div key={comment.id} className="group">
                           <div 
                             ref={(el) => { if (el) commentRefs.current.set(comment.id, el); }}
-                            className="flex gap-3 p-4 bg-[var(--bg-secondary)] rounded-xl hover:bg-[var(--bg-secondary)]/80 
+                            className="flex gap-2 sm:gap-3 p-3 sm:p-4 bg-[var(--bg-secondary)] rounded-lg sm:rounded-xl hover:bg-[var(--bg-secondary)]/80 
                                      transition-all duration-200"
                           >
                             {/* 头像 */}
                             <button
                               onClick={() => comment.user && navigate(`/users/${comment.user_id}`)}
-                              className="w-10 h-10 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 
-                                        flex items-center justify-center text-white font-medium flex-shrink-0 
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 
+                                        flex items-center justify-center text-white text-xs sm:text-sm font-medium flex-shrink-0 
                                         hover:opacity-90 transition-opacity overflow-hidden"
                             >
                               {comment.user?.avatar ? (

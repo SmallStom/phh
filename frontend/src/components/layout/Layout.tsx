@@ -8,7 +8,6 @@ export const Layout: React.FC = () => {
   const { sidebarOpen } = useUIStore();
   const location = useLocation();
 
-  // 当路由变化时，重置滚动位置到顶部
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
@@ -17,8 +16,11 @@ export const Layout: React.FC = () => {
     <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <Header />
       <div className="flex relative">
-        <Sidebar />
-        <main className={`flex-1 transition-all duration-300 pt-16 ${sidebarOpen ? 'ml-64' : ''}`}>
+        {/* Sidebar - hidden on mobile and tablet */}
+        <div className="hidden xl:block">
+          <Sidebar />
+        </div>
+        <main className={`flex-1 transition-all duration-300 pt-14 sm:pt-16 ${sidebarOpen ? 'xl:ml-64' : ''}`}>
           <Outlet />
         </main>
       </div>

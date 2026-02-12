@@ -248,22 +248,22 @@ export const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative pt-24 pb-8 px-4">
+      <div className="relative pt-20 sm:pt-24 pb-6 sm:pb-8 px-3 sm:px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="heading-display text-4xl md:text-5xl lg:text-6xl text-[var(--text-primary)] mb-4 animate-fade-in">
+          <h1 className="heading-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[var(--text-primary)] mb-3 sm:mb-4 animate-fade-in">
             美好广场
           </h1>
-          <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-2 heading-hand text-2xl animate-fade-in animation-delay-100">
+          <p className="text-base sm:text-lg md:text-xl text-[var(--text-secondary)] mb-2 heading-hand text-xl sm:text-2xl animate-fade-in animation-delay-100">
             发现和分享美好的瞬间
           </p>
-          <div className="decorative-line mx-auto mt-6 animate-fade-in animation-delay-200" />
+          <div className="decorative-line mx-auto mt-4 sm:mt-6 animate-fade-in animation-delay-200" />
         </div>
       </div>
 
-      {/* Main Content - 居中布局 */}
-      <div className="max-w-7xl mx-auto px-4 pb-16">
-        {/* Search Section - 与内容区同宽 */}
-        <div className="max-w-6xl mx-auto mb-8">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 pb-12 sm:pb-16">
+        {/* Search Section */}
+        <div className="max-w-4xl mx-auto mb-6 sm:mb-8">
           <div className="flex gap-2 items-center">
             <div className="flex-1 relative">
               <input
@@ -271,7 +271,7 @@ export const Home: React.FC = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full px-4 py-2.5 rounded-xl transition-all duration-200 outline-none pr-10"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all duration-200 outline-none pr-10 text-sm sm:text-base"
                 style={{
                   backgroundColor: 'var(--bg-secondary)',
                   border: '1px solid var(--border-color)',
@@ -291,23 +291,23 @@ export const Home: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={loading || !query.trim()}
-              className="btn-primary whitespace-nowrap disabled:opacity-50 h-[42px] flex items-center justify-center"
+              className="btn-primary whitespace-nowrap disabled:opacity-50 h-[38px] sm:h-[42px] flex items-center justify-center px-4 sm:px-6 text-sm sm:text-base"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
                   <LoadingDots size="sm" />
-                  搜索中
+                  <span className="hidden sm:inline">搜索中</span>
                 </span>
               ) : '搜索'}
             </button>
           </div>
         </div>
 
-        {/* Content - 与搜索框同宽 */}
+        {/* Content */}
         <div className="max-w-6xl mx-auto">
-          <div className="flex gap-8">
+          <div className="flex gap-6 lg:gap-8">
           {/* Content Area */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {searched ? (
               <SearchResults
                 results={results}
@@ -342,9 +342,9 @@ export const Home: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="w-80 hidden lg:block flex-shrink-0 space-y-6">
-            <div className="sticky top-36 space-y-6">
+          {/* Sidebar - hidden on mobile and tablet */}
+          <div className="w-72 lg:w-80 hidden xl:block flex-shrink-0 space-y-6">
+            <div className="sticky top-20 space-y-6">
               <DailyGuessCard />
               <HotContent />
             </div>
@@ -570,7 +570,7 @@ const ContentList: React.FC<ContentListProps> = ({
   }
 
   return (
-    <StaggerContainer className="space-y-6">
+    <StaggerContainer className="space-y-4 sm:space-y-6">
       {publicRecords.map((record) => {
         const typeInfo = typeIcons[record.record_type] || typeIcons.note;
         return (
@@ -578,54 +578,55 @@ const ContentList: React.FC<ContentListProps> = ({
             <HoverCard>
               <article
                 onClick={() => onRecordClick(record.id)}
-                className="card card-hover p-6 cursor-pointer"
+                className="card card-hover p-4 sm:p-6 cursor-pointer"
               >
                 {/* Header */}
-                <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <h2 className="heading-display text-xl md:text-2xl text-[var(--text-primary)] mb-2 hover:text-[var(--accent-color)] transition-colors">
+                <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="heading-display text-lg sm:text-xl md:text-2xl text-[var(--text-primary)] mb-1.5 sm:mb-2 hover:text-[var(--accent-color)] transition-colors truncate">
                   {record.title || '无标题'}
                 </h2>
                 {record.user && (
-                  <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[var(--text-muted)]">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onUserClick(record.user!.id);
                       }}
-                      className="flex items-center gap-2 hover:text-[var(--accent-color)] transition-colors"
+                      className="flex items-center gap-1.5 sm:gap-2 hover:text-[var(--accent-color)] transition-colors"
                     >
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-xs overflow-hidden">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-terracotta-400 to-terracotta-600 flex items-center justify-center text-white text-[10px] sm:text-xs overflow-hidden flex-shrink-0">
                         {record.user.avatar ? (
                           <img src={record.user.avatar} alt={record.user.username} className="w-full h-full object-cover" />
                         ) : (
                           record.user.username.charAt(0).toUpperCase()
                         )}
                       </div>
-                      <span>{record.user.username}</span>
+                      <span className="truncate">{record.user.username}</span>
                     </button>
                     <span>•</span>
-                    <span>{formatDateTime(record.published_at || record.created_at)}</span>
+                    <span className="hidden sm:inline">{formatDateTime(record.published_at || record.created_at)}</span>
+                    <span className="sm:hidden">{new Date(record.published_at || record.created_at).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${typeInfo.color}`}>
-                <span className="mr-1">{typeInfo.icon}</span>
+              <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium flex-shrink-0 ${typeInfo.color}`}>
+                <span className="mr-0.5 sm:mr-1">{typeInfo.icon}</span>
                 {typeInfo.label}
               </span>
             </div>
 
             {/* Content */}
-            <HtmlContent content={record.content} lineClamp={3} className="mb-4 leading-relaxed" />
+            <HtmlContent content={record.content} lineClamp={3} className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base" />
 
             {/* Images */}
             {record.image_urls && record.image_urls.length > 0 && (
-              <div className={`grid gap-2 mb-4 ${
+              <div className={`grid gap-1.5 sm:gap-2 mb-3 sm:mb-4 ${
                 record.image_urls.length === 1 ? 'grid-cols-1' : 
-                record.image_urls.length === 2 ? 'grid-cols-2' : 'grid-cols-3'
+                record.image_urls.length === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-3'
               }`}>
                 {record.image_urls.slice(0, 3).map((url, idx) => (
-                  <div key={idx} className="relative aspect-video rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
+                  <div key={idx} className="relative aspect-video rounded-lg sm:rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
                     <img
                       src={url}
                       alt={`图片 ${idx + 1}`}
@@ -639,11 +640,11 @@ const ContentList: React.FC<ContentListProps> = ({
             )}
 
             {/* Footer */}
-            <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
-              <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-[var(--border-color)]">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <button
                   onClick={(e) => onLike(e, record.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                  className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm transition-all ${
                     record.is_liked
                       ? 'bg-terracotta-100 text-terracotta-700 dark:bg-terracotta-900/30 dark:text-terracotta-300'
                       : 'hover:bg-[var(--bg-secondary)] text-[var(--text-muted)]'
@@ -654,17 +655,20 @@ const ContentList: React.FC<ContentListProps> = ({
                 </button>
                 <button
                   onClick={(e) => onOpenComments(e, record)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] transition-all"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] transition-all"
                 >
                   <span>✉</span>
                   <span>{record.comment_count || 0}</span>
                 </button>
               </div>
               {record.tags.length > 0 && (
-                <div className="flex gap-2">
-                  {record.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="tag text-xs">#{tag}</span>
+                <div className="flex gap-1 sm:gap-2 overflow-x-auto">
+                  {record.tags.slice(0, 2).map((tag) => (
+                    <span key={tag} className="tag text-[10px] sm:text-xs whitespace-nowrap">#{tag}</span>
                   ))}
+                  {record.tags.length > 2 && (
+                    <span className="text-[10px] sm:text-xs text-[var(--text-muted)]">+{record.tags.length - 2}</span>
+                  )}
                 </div>
               )}
                 </div>

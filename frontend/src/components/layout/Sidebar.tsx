@@ -39,14 +39,12 @@ export const Sidebar: React.FC = () => {
   const menuItems = isAuthenticated ? [...publicMenuItems, ...privateMenuItems] : publicMenuItems;
 
   return (
-    <aside className="fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] overflow-y-auto z-40 transition-all duration-300"
+    <aside className="fixed left-0 top-14 sm:top-16 w-56 xl:w-64 h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)] overflow-y-auto z-40 transition-all duration-300"
            style={{ backgroundColor: 'var(--bg-secondary)' }}>
-      {/* 装饰性顶部线条 */}
       <div className="h-1 w-full bg-gradient-to-r from-terracotta-400 via-forest-400 to-sand-400" />
       
-      <nav className="p-4 space-y-1">
-        {/* 导航标题 */}
-        <div className="px-4 py-3 mb-4">
+      <nav className="p-3 xl:p-4 space-y-1">
+        <div className="px-3 xl:px-4 py-2 xl:py-3 mb-3 xl:mb-4">
           <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">
             导航菜单
           </h3>
@@ -61,7 +59,7 @@ export const Sidebar: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
+              className={`flex items-center gap-2.5 xl:gap-3 px-3 xl:px-4 py-2.5 xl:py-3 rounded-xl transition-all duration-300 group ${
                 isActive
                   ? 'bg-terracotta-500 text-white shadow-md'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]'
@@ -70,9 +68,8 @@ export const Sidebar: React.FC = () => {
               <span className={`transition-transform duration-300 ${isActive ? '' : 'group-hover:scale-110'}`}>
                 {item.icon}
               </span>
-              <span className="font-medium">{item.label}</span>
+              <span className="font-medium text-sm xl:text-base">{item.label}</span>
               
-              {/* 活跃指示器 */}
               {isActive && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
               )}
@@ -81,10 +78,9 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
       
-      {/* 底部信息 */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[var(--border-color)]"
+      <div className="absolute bottom-0 left-0 right-0 p-3 xl:p-4 border-t border-[var(--border-color)]"
            style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-1.5 xl:space-y-2">
           <p className="text-xs text-[var(--text-muted)]">
             记录美好，分享生活
           </p>
