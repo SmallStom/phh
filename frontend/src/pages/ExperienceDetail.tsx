@@ -4,6 +4,7 @@ import { experiencesApi } from '../api/experiences';
 import { collectionsApi } from '../api/collections';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime, formatDate } from '../utils/dateUtils';
+import { useSEO } from '../hooks/useSEO';
 import type { Experience } from '../types/experience';
 
 const categoryIcons: Record<string, { icon: string; label: string; color: string }> = {
@@ -24,6 +25,15 @@ export const ExperienceDetail: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [fromSource, setFromSource] = useState<string | null>(null);
   const [isCollected, setIsCollected] = useState(false);
+
+  // SEO: 动态设置页面 meta 标签
+  useSEO({
+    title: experience ? `${experience.title} - 美好广场` : '美好广场 - 发现和分享美好的瞬间',
+    description: experience ? (experience.description?.replace(/<[^>]*>/g, '').slice(0, 160) || '在美好广场查看这段经历') : '记录生活、展示经历、收藏兴趣，打造属于你的个人空间。',
+    keywords: experience ? ['美好广场', '经历', experience.category?.value || experience.category || ''].join(',') : '美好广场,个人记录,生活分享',
+    type: 'article',
+    author: experience?.user?.username,
+  });
 
   useEffect(() => {
     initializeAuth();

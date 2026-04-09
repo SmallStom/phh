@@ -7,6 +7,7 @@ import { likesApi } from '../api/likes';
 import { commentsApi } from '../api/comments';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
+import { useSEO } from '../hooks/useSEO';
 import { HtmlContent } from '../components/HtmlContent';
 import { MentionText } from '../components/mentions/MentionText';
 import { MentionInput } from '../components/mentions/MentionInput';
@@ -65,6 +66,16 @@ export const RecordDetail: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // SEO: 动态设置页面 meta 标签
+  useSEO({
+    title: record ? `${record.title || '无标题'} - 美好广场` : '美好广场 - 发现和分享美好的瞬间',
+    description: record ? (record.content?.replace(/<[^>]*>/g, '').slice(0, 160) || '在美好广场发现有趣的内容') : '记录生活、展示经历、收藏兴趣，打造属于你的个人空间。',
+    keywords: record ? ['美好广场', '记录', ...record.tags].join(',') : '美好广场,个人记录,生活分享',
+    type: 'article',
+    author: record?.user?.username,
+    publishedTime: record?.published_at || record?.created_at,
+  });
 
   const loadRecord = async (recordId: string) => {
     try {

@@ -7,6 +7,7 @@ import { collectionsApi } from '../api/collections';
 import { likesApi } from '../api/likes';
 import { useAuthStore } from '../store/authStore';
 import { formatDateTime } from '../utils/dateUtils';
+import { useSEO } from '../hooks/useSEO';
 import { HotContent } from '../components/HotContent';
 import { DailyGuessCard } from '../components/games/dailyGuess';
 import CommentModal from '../components/CommentModal';
@@ -28,6 +29,14 @@ const typeIcons: Record<string, { icon: string; label: string; color: string }> 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // SEO: 广场首页
+  useSEO({
+    title: '美好广场 - 发现和分享美好的瞬间',
+    description: '在美好广场发现有趣的内容，与志同道合的人分享美好瞬间。支持记录生活、展示经历、收藏兴趣。',
+    keywords: '美好广场,个人记录,生活分享,时间轴,收藏,社区,广场',
+    type: 'website',
+  });
   const { isAuthenticated, initializeAuth } = useAuthStore();
   const [publicRecords, setPublicRecords] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(false);
