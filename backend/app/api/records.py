@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional, List
+from app.core.baidu_seo import push_record_to_baidu
 from app.core.database import get_db
 from app.dependencies import get_current_user, get_current_user_optional
 from app.models.user import User
@@ -159,6 +160,10 @@ async def create_record(
     db.add(record)
     db.commit()
     db.refresh(record)
+    
+    # 发布成功后推送给百度 SEO（异步，不阻塞响应）
+    if record_data.status == RecordStatus.PUBLISHED and record.id:
+        push_record_to_baidu(record.id)
     
     if record_data.tags:
         for tag_name in record_data.tags:
@@ -345,5 +350,8 @@ async def publish_record(
     
     db.commit()
     db.refresh(record)
+    
+    # 发布成功后推送给百度 SEO
+    push_record_to_baidu(record_id)
     
     return RecordResponse.model_validate(record)
