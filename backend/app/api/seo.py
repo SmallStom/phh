@@ -4,6 +4,7 @@ SEO API 路由 - 提供 sitemap.xml 和 robots.txt 的动态接口
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
+from fastapi.routing import APIRoute
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from app.core.database import get_db
@@ -15,7 +16,7 @@ router = APIRouter()
 SITE_URL = "https://ysypjf.cn"
 
 
-@router.get("/sitemap.xml")
+@router.api_route("/sitemap.xml", methods=["GET", "HEAD"])
 async def sitemap(db: Session = Depends(get_db)):
     """生成 sitemap.xml，包含静态页面和动态内容"""
     urls = []
@@ -97,7 +98,7 @@ async def sitemap(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/robots.txt")
+@router.api_route("/robots.txt", methods=["GET", "HEAD"])
 async def robots():
     """返回 robots.txt"""
     content = """User-agent: *
