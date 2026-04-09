@@ -30,7 +30,7 @@ export const ExperienceDetail: React.FC = () => {
   useSEO({
     title: experience ? `${experience.title} - 美好广场` : '美好广场 - 发现和分享美好的瞬间',
     description: experience ? (experience.description?.replace(/<[^>]*>/g, '').slice(0, 160) || '在美好广场查看这段经历') : '记录生活、展示经历、收藏兴趣，打造属于你的个人空间。',
-    keywords: experience ? ['美好广场', '经历', experience.category?.value || experience.category || ''].join(',') : '美好广场,个人记录,生活分享',
+    keywords: experience ? ['美好广场', '经历', experience.category as string || ''].join(',') : '美好广场,个人记录,生活分享',
     type: 'article',
     author: experience?.user?.username,
   });
