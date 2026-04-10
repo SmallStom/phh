@@ -33,7 +33,7 @@ export function useDraftSave<T>({
   // 使用 ref 存储所有状态，避免触发重新渲染
   const dataRef = useRef<T>(loadDraft(storageKey, defaultValue));
   const lastSavedRef = useRef<Date | null>(null);
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 初始化 lastSavedRef
   if (typeof window !== 'undefined' && lastSavedRef.current === null) {
